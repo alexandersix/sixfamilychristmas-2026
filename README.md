@@ -36,6 +36,19 @@ the `filament:upgrade` Composer hook; no separate admin frontend build is needed
 4. Click **Preview** to see the saved issue. Draft previews require an admin login.
    Turn on **Publish issue** and save only when the issue is ready to be public.
 
+The optional **Issue password** field sets or replaces a viewer password. It uses
+Laravel's `hashed` cast (the same hashing configuration as user passwords), and
+the hash is hidden from model serialization and never prefilled in the admin form.
+Passwords follow the application's account password policy: at least 8 characters
+locally; in production, at least 12 characters with mixed case, numbers, symbols,
+and a breach check. A 72-byte maximum respects bcrypt's input limit even for
+multibyte characters. Leave the field blank when editing to
+preserve the current password. Existing issues keep a null password until one is
+set; seeders do not create a shared default password.
+
+**This only stores passwords; it does not enforce them yet. Published issues are
+still publicly accessible until the viewer password check is implemented.**
+
 The issue address stays the same after renaming it. Duplicate names receive a
 suffix, such as `/issues/2026-2`. Empty issues are allowed while assembling a draft.
 `/option-2`, `/styleguide`, and `/components` remain unchanged design references;

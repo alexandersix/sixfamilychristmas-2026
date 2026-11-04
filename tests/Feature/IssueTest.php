@@ -12,6 +12,7 @@ use Database\Seeders\IssueSeeder;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -47,6 +48,73 @@ test('editors create issues with unique permanent addresses and publish them', f
     $duplicate = Issue::factory()->create(['name' => 'Christmas 2026']);
     expect($duplicate->slug)->toBe('christmas-2026-2');
 });
+
+test('issue passwords use Laravel hashing and are hidden from serialization', function () {
+    $issue = Issue::factory()->create(['password' => 'winter-family-2026']);
+    $stored = $issue->fresh()->getRawOriginal('password');
+
+    expect($stored)->not->toBe('winter-family-2026')
+        ->and(Hash::check('winter-family-2026', $stored))->toBeTrue()
+        ->and(Hash::check('incorrect-password', $stored))->toBeFalse()
+        ->and($issue->toArray())->not->toHaveKey('password')
+        ->and($issue->toJson())->not->toContain($stored);
+});
+
+test('editors set replace and preserve issue passwords without receiving the hash', function () {
+    $this->actingAs(User::factory()->create());
+
+    Livewire::test(CreateIssue::class)
+        ->fillForm(['name' => '2026', 'password' => 'first-family-password'])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertSet('data.password', null);
+
+    $issue = Issue::sole();
+    $originalHash = $issue->password;
+    expect(Hash::check('first-family-password', $originalHash))->toBeTrue();
+
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->assertSet('data.password', null)
+        ->assertDontSee($originalHash)
+        ->fillForm(['name' => 'Renamed issue', 'password' => ''])
+        ->call('save')
+        ->assertHasNoFormErrors();
+    expect($issue->fresh()->password)->toBe($originalHash);
+
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->fillForm(['password' => 'replacement-family-password'])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertSet('data.password', null);
+
+    $newHash = $issue->fresh()->password;
+    expect(Hash::check('replacement-family-password', $newHash))->toBeTrue()
+        ->and(Hash::check('first-family-password', $newHash))->toBeFalse();
+});
+
+test('issue passwords follow the account policy and bcrypt byte maximum', function (string $password, bool $valid, string $environment = 'testing') {
+    app()->instance('env', $environment);
+    $this->actingAs(User::factory()->create());
+    $form = Livewire::test(CreateIssue::class)
+        ->set('data.name', '2026')
+        ->set('data.password', $password)
+        ->call('create');
+
+    if ($valid) {
+        $form->assertHasNoFormErrors();
+        expect(Hash::check($password, Issue::sole()->password))->toBeTrue();
+    } else {
+        $form->assertHasFormErrors(['password']);
+        expect(Issue::count())->toBe(0);
+    }
+})->with([
+    'too short' => ['1234567', false],
+    'minimum length' => ['12345678', true],
+    '72 bytes' => [str_repeat('é', 36), true],
+    '73 bytes' => [str_repeat('a', 73), false],
+    'multibyte overflow' => [str_repeat('é', 37), false],
+    'production policy' => ['12345678', false, 'production'],
+]);
 
 test('editors upload photos and create an event directly inside an issue', function () {
     $this->actingAs(User::factory()->create());
@@ -121,7 +189,7 @@ test('editors reuse reorder and remove events without changing another issue', f
 });
 
 test('issue pages hide drafts and return ordered sanitized stories with expiring photos', function () {
-    $draft = Issue::factory()->create(['name' => '2026']);
+    $draft = Issue::factory()->create(['name' => '2026', 'password' => 'family-preview-password']);
     $this->get('/issues/2026')->assertNotFound();
     $this->get('/issues/2026?preview=1')->assertNotFound();
     $this->get('/issues/missing')->assertNotFound();
@@ -130,7 +198,7 @@ test('issue pages hide drafts and return ordered sanitized stories with expiring
     $this->actingAs(User::factory()->create())
         ->get('/issues/2026/preview')
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('preview', true)->has('issue.events', 0));
+        ->assertInertia(fn (Assert $page) => $page->where('preview', true)->has('issue.events', 0)->missing('issue.password'));
     $this->get('/issues/2026')->assertNotFound();
 
     $first = Event::factory()->create(['body' => '<p>A <strong>real</strong> story.</p><script>alert(1)</script>']);
@@ -146,6 +214,7 @@ test('issue pages hide drafts and return ordered sanitized stories with expiring
         ->assertInertia(fn (Assert $page) => $page
             ->component('issues/show')
             ->where('preview', false)
+            ->missing('issue.password')
             ->has('issue.events', 2)
             ->where('issue.events.0.id', $second->id)
             ->where('issue.events.1.id', $first->id)

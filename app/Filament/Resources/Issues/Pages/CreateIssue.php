@@ -8,4 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateIssue extends CreateRecord
 {
     protected static string $resource = IssueResource::class;
+
+    protected function afterCreate(): void
+    {
+        $this->data['password'] = null;
+    }
 }

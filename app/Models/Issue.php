@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\IssueFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,9 +16,11 @@ use Illuminate\Support\Str;
  * @property string $name
  * @property string $slug
  * @property bool $is_published
+ * @property string|null $password
  * @property-read Collection<int, Event> $events
  */
-#[Fillable(['name', 'is_published'])]
+#[Fillable(['name', 'is_published', 'password'])]
+#[Hidden(['password'])]
 class Issue extends Model
 {
     /** @use HasFactory<IssueFactory> */
@@ -38,7 +41,10 @@ class Issue extends Model
 
     protected function casts(): array
     {
-        return ['is_published' => 'boolean'];
+        return [
+            'is_published' => 'boolean',
+            'password' => 'hashed',
+        ];
     }
 
     /** @return BelongsToMany<Event, $this, IssueEvent> */

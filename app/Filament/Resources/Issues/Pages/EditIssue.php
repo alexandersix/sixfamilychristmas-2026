@@ -12,6 +12,11 @@ class EditIssue extends EditRecord
 {
     protected static string $resource = IssueResource::class;
 
+    protected function afterSave(): void
+    {
+        $this->data['password'] = null;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
