@@ -1,8 +1,8 @@
 # Six Family Christmas 2026
 
 A private family Christmas card, built with Laravel 13, Inertia 3, and React 19.
-The Filament 5 admin manages issues and reusable events. The family password gate
-is not implemented yet; published issues are public.
+The Filament 5 admin manages issues and reusable events. Published issues require
+their own invitation password, checked by Laravel before any issue content is sent.
 
 ## Admin panel
 
@@ -34,7 +34,8 @@ the `filament:upgrade` Composer hook; no separate admin frontend build is needed
    page's one-, two-, three-, and four-photo compositions are selected automatically;
    there is no incompatible layout option to choose accidentally.
 4. Click **Preview** to see the saved issue. Draft previews require an admin login.
-   Turn on **Publish issue** and save only when the issue is ready to be public.
+   Set an **Issue password**, then turn on **Publish issue** and save when the
+   issue is ready to share with invited readers.
 
 The optional **Issue password** field sets or replaces a viewer password. It uses
 Laravel's `hashed` cast (the same hashing configuration as user passwords), and
@@ -44,10 +45,25 @@ locally; in production, at least 12 characters with mixed case, numbers, symbols
 and a breach check. A 72-byte maximum respects bcrypt's input limit even for
 multibyte characters. Leave the field blank when editing to
 preserve the current password. Existing issues keep a null password until one is
-set; seeders do not create a shared default password.
+set. Local sample issues use the demo password `password`; production seeding
+does not create issues or set passwords.
 
-**This only stores passwords; it does not enforce them yet. Published issues are
-still publicly accessible until the viewer password check is implemented.**
+Readers without authorization are redirected to `/issues/{slug}/login`. Successful
+login regenerates the session ID and authorizes only that issue for a maximum of
+24 hours from login, not extended by reading. The normal Laravel session idle
+timeout also applies (120 minutes by default, configured by `SESSION_LIFETIME`).
+Changing an issue's password revokes previous authorizations on the next request.
+Missing passwords fail closed with HTTP 403; drafts remain HTTP 404. Admin previews
+still use the separate admin login and do not grant reader authorization.
+
+Password guesses are limited to five attempts per minute per issue and IP address.
+Laravel's CSRF protection applies, and failed passwords are never flashed back to
+the browser. Issue pages and photos use `Cache-Control: private, no-store`;
+Inertia history is encrypted and cleared when the login page is shown. The login
+page receives no issue content or photo URLs. Removing HTML or JavaScript cannot
+reveal content that the server did not send. Use HTTPS and a strong, unique issue
+password in production. Anyone who knows the shared password is an invited reader;
+no shared-password gate can stop a reader from sharing it or saving received content.
 
 The issue address stays the same after renaming it. Duplicate names receive a
 suffix, such as `/issues/2026-2`. Empty issues are allowed while assembling a draft.
@@ -134,7 +150,7 @@ amp orb services ensure
 ```
 
 Open the **Christmas Card** portal URL printed by that command, or use the Portal
-tab. Portal access is controlled by Amp; it is not the future card password gate.
+tab. Portal access is controlled by Amp, separately from the issue password gate.
 The preview uses compiled assets. After editing React or CSS, run `npm run build`
 and reload the page. PHP edits are available on the next request.
 
@@ -172,10 +188,13 @@ plain unsigned object URLs are denied. Direct browser uploads can use
 `temporaryUploadUrl(...)`. The Filament photo fields use the `s3` disk, private
 visibility, random filenames, and JPEG/PNG/WebP validation. Rich-text stories
 support basic formatting and links; photographs are managed separately.
-Issue responses sanitize story HTML and generate one-hour signed photo URLs only
-after checking publication or preview access. Responses are not cacheable. Signed
-URLs remain usable until they expire, even if an issue is subsequently unpublished.
-Do not make the bucket public to work around a preview issue.
+Issue responses sanitize story HTML. Reader photos are streamed through
+`/issues/{slug}/cover` and `/issues/{slug}/events/{event}/photos/{index}` after the
+same publication, password, and session checks as the issue page. Event photos
+must belong to that issue. Copying a reader photo URL does not grant access in
+another browser. Admin previews still use one-hour signed storage URLs; those
+remain usable until expiry. Responses are not cacheable. Do not make the bucket
+public to work around a preview issue.
 
 Removing or replacing a photo does not delete its storage object automatically.
 This avoids destructive storage changes while editing shared stories; unused-file

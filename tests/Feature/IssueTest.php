@@ -43,7 +43,7 @@ test('editors create issues with unique permanent addresses and publish them', f
         ->assertHasNoFormErrors();
 
     expect($issue->fresh()->slug)->toBe('christmas-2026');
-    $this->get('/issues/christmas-2026')->assertOk();
+    $this->get('/issues/christmas-2026')->assertForbidden();
 
     $duplicate = Issue::factory()->create(['name' => 'Christmas 2026']);
     expect($duplicate->slug)->toBe('christmas-2026-2');
@@ -188,7 +188,7 @@ test('editors reuse reorder and remove events without changing another issue', f
         ->and(Event::count())->toBe(3);
 });
 
-test('issue pages hide drafts and return ordered sanitized stories with expiring photos', function () {
+test('issue pages hide drafts and return ordered sanitized stories with protected photos', function () {
     $draft = Issue::factory()->create(['name' => '2026', 'password' => 'family-preview-password']);
     $this->get('/issues/2026')->assertNotFound();
     $this->get('/issues/2026?preview=1')->assertNotFound();
@@ -213,6 +213,7 @@ test('issue pages hide drafts and return ordered sanitized stories with expiring
     $draft->events()->attach($second, ['position' => 2]);
     $draft->update(['is_published' => true]);
     auth()->logout();
+    $this->post('/issues/2026/login', ['password' => 'family-preview-password'])->assertSessionHasNoErrors();
 
     $this->get('/issues/2026')
         ->assertOk()
@@ -226,7 +227,7 @@ test('issue pages hide drafts and return ordered sanitized stories with expiring
             ->where('issue.events.1.id', $first->id)
             ->where('issue.events.1.body', fn (string $body) => str_contains($body, '<strong>real</strong>') && ! str_contains($body, '<script'))
             ->where('issue.events.1.photos.0.alt', 'A family memory')
-            ->where('issue.events.1.photos.0.src', fn (string $url) => str_starts_with($url, 'https://photos.example.test/events/') && str_contains($url, '?expires='))
+            ->where('issue.events.1.photos.0.src', route('issues.photos.show', [$draft->slug, $first->id, 0]))
             ->missing('issue.events.1.photos.0.path'));
 });
 
@@ -313,7 +314,7 @@ test('editors create and edit issue headers with private cover photographs', fun
     ];
 
     Livewire::test(CreateIssue::class)
-        ->fillForm([...$header, 'name' => '2026', 'cover_photo_path' => [UploadedFile::fake()->image('cover.jpg')]])
+        ->fillForm([...$header, 'name' => '2026', 'password' => 'family-header-password', 'cover_photo_path' => [UploadedFile::fake()->image('cover.jpg')]])
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -331,6 +332,7 @@ test('editors create and edit issue headers with private cover photographs', fun
         ->and($issue->fresh()->slug)->toBe('2026');
 
     auth()->logout();
+    $this->post('/issues/2026/login', ['password' => 'family-header-password'])->assertSessionHasNoErrors();
     $this->get('/issues/2026')->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('preview', false)
         ->where('issue.name', '2027')
@@ -343,7 +345,7 @@ test('editors create and edit issue headers with private cover photographs', fun
         ->where('issue.cover_introduction', 'Our favorite memories from 2027.')
         ->where('issue.cover_link_label', 'Read our stories')
         ->where('issue.cover_photo.alt', 'Our family at the beach')
-        ->where('issue.cover_photo.src', fn (string $url) => str_starts_with($url, 'https://photos.example.test/issues/') && str_contains($url, '?expires='))
+        ->where('issue.cover_photo.src', route('issues.cover', $issue->slug))
         ->missing('issue.cover_photo_path'));
 
     $this->actingAs(User::first());
@@ -399,7 +401,7 @@ test('editors write edit and hide the optional Last Word without losing the lett
     ];
 
     Livewire::test(CreateIssue::class)
-        ->fillForm(['name' => '2026', 'show_last_word' => true, 'last_word_body' => null])
+        ->fillForm(['name' => '2026', 'password' => 'family-letter-password', 'show_last_word' => true, 'last_word_body' => null])
         ->call('create')->assertHasFormErrors(['last_word_body'])
         ->fillForm($letter)
         ->call('create')->assertHasNoFormErrors();
@@ -412,6 +414,7 @@ test('editors write edit and hide the optional Last Word without losing the lett
     $this->get('/issues/2026/preview')->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('preview', true)->where('issue.last_word.title', "Until next time,\nfriends"));
     auth()->logout();
+    $this->post('/issues/2026/login', ['password' => 'family-letter-password'])->assertSessionHasNoErrors();
     $this->get('/issues/2026')->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('issue.name', '2027')
         ->where('issue.last_word.title', "Until next time,\nfriends")
@@ -437,9 +440,11 @@ test('editors write edit and hide the optional Last Word without losing the lett
 
 test('issue pages sanitize Last Word rich text before sending it to readers', function () {
     $issue = Issue::factory()->published()->create([
+        'password' => 'family-letter-password',
         'show_last_word' => true,
         'last_word_body' => '<p>With <em>love</em>.</p><script>alert(1)</script><img src="x" onerror="alert(1)">',
     ]);
+    $this->post('/issues/'.$issue->slug.'/login', ['password' => 'family-letter-password'])->assertSessionHasNoErrors();
     $this->get('/issues/'.$issue->slug)->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('issue.last_word.body', fn (string $body) => str_contains($body, '<em>love</em>') && ! str_contains($body, '<script') && ! str_contains($body, 'onerror')));
 });

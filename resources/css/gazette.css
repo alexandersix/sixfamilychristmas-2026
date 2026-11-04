@@ -833,3 +833,56 @@ html:has(.family-gazette) {
 .gazette-button[aria-busy='true'] {
     cursor: progress;
 }
+
+.gazette-login .gazette-paper {
+    max-width: 760px;
+}
+
+.gazette-login-name {
+    padding-block: var(--gazette-space-6);
+}
+
+.gazette-login-content {
+    max-width: 420px;
+    margin-inline: auto;
+    padding-block: var(--gazette-space-8);
+}
+
+.gazette-login-form {
+    display: grid;
+    gap: var(--gazette-space-2);
+}
+
+.gazette-login-form label {
+    font-size: var(--gazette-text-action);
+    font-weight: 700;
+}
+
+.gazette-login-form input {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    border: 1px solid var(--gazette-muted);
+    border-radius: 0;
+    background: var(--gazette-paper);
+    color: var(--gazette-ink);
+    padding: var(--gazette-space-3);
+    font: inherit;
+}
+
+.gazette-login-form input:hover {
+    background: var(--gazette-edge);
+}
+
+.gazette-login-form input[aria-invalid='true'] {
+    border-color: var(--gazette-accent);
+}
+
+.gazette-login-help {
+    color: var(--gazette-accent);
+    font-size: var(--gazette-text-small);
+}
+
+.gazette-login-form .gazette-button {
+    margin-top: var(--gazette-space-2);
+}

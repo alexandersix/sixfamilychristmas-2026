@@ -15,9 +15,22 @@ class IssueController extends Controller
 {
     public function show(Issue $issue): Response
     {
-        abort_unless($issue->is_published, 404);
-
         return $this->render($issue, false);
+    }
+
+    public function cover(Issue $issue): Response
+    {
+        abort_if($issue->cover_photo_path === null, 404);
+
+        return Storage::disk('s3')->response($issue->cover_photo_path);
+    }
+
+    public function photo(Issue $issue, int $event, int $photo): Response
+    {
+        $story = $issue->events()->findOrFail($event);
+        abort_unless(isset($story->photos[$photo]), 404);
+
+        return Storage::disk('s3')->response($story->photos[$photo]['path']);
     }
 
     public function preview(Request $request, Issue $issue): Response
@@ -29,6 +42,8 @@ class IssueController extends Controller
 
     private function render(Issue $issue, bool $preview): Response
     {
+        Inertia::encryptHistory();
+
         $response = Inertia::render('issues/show', [
             'issue' => [
                 'name' => $issue->name,
@@ -38,7 +53,9 @@ class IssueController extends Controller
                 'left_navigation_label' => $issue->left_navigation_label,
                 'right_navigation_label' => $issue->right_navigation_label,
                 'cover_photo' => $issue->cover_photo_path ? [
-                    'src' => Storage::disk('s3')->temporaryUrl($issue->cover_photo_path, now()->addHour()),
+                    'src' => $preview
+                        ? Storage::disk('s3')->temporaryUrl($issue->cover_photo_path, now()->addHour())
+                        : route('issues.cover', $issue->slug),
                     'alt' => $issue->cover_photo_alt,
                 ] : null,
                 'cover_photo_alt' => $issue->cover_photo_alt,
@@ -58,11 +75,13 @@ class IssueController extends Controller
                     'title' => $event->title,
                     'note' => $event->note,
                     'body' => Str::sanitizeHtml($event->body),
-                    'photos' => array_map(fn (array $photo): array => [
-                        'src' => Storage::disk('s3')->temporaryUrl($photo['path'], now()->addHour()),
+                    'photos' => array_map(fn (array $photo, int $index): array => [
+                        'src' => $preview
+                            ? Storage::disk('s3')->temporaryUrl($photo['path'], now()->addHour())
+                            : route('issues.photos.show', [$issue->slug, $event->id, $index]),
                         'alt' => $photo['alt'],
                         'caption' => $photo['caption'] ?? null,
-                    ], $event->photos),
+                    ], $event->photos, array_keys($event->photos)),
                 ]),
             ],
             'preview' => $preview,

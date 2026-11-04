@@ -33,4 +33,4 @@ services:
         health: /orb-health
         portal:
             title: Christmas Card
-            description: Laravel + React preview with the Filament admin panel at /admin. The card password will be added later.
+            description: Laravel + React preview with password-protected issues and the Filament admin panel at /admin.
