@@ -1,7 +1,26 @@
 # Six Family Christmas 2026
 
 A private family Christmas card, built with Laravel 13, Inertia 3, and React 19.
-The card, password gate, event editor, and Filament panel are not implemented yet.
+The admin panel uses Filament 5. The card, password gate, and event editor are not
+implemented yet.
+
+## Admin panel
+
+Open `/admin` on the application (or orb portal) to sign in. All authenticated
+users can currently access the panel; there are no role or email restrictions.
+Guests must still log in, and public registration is not enabled.
+
+In the local development environment, run `php artisan db:seed` to create:
+
+- Email: `test@example.com`
+- Password: `password`
+
+Orb setup runs this automatically. Repeated seeding preserves existing users and
+their passwords. The development account is only seeded when `APP_ENV=local`,
+never in production. Do not use these credentials for a deployed environment.
+
+Filament assets are published automatically on `composer install` and updates via
+the `filament:upgrade` Composer hook; no separate admin frontend build is needed.
 
 ## Orb development environment
 
@@ -78,5 +97,5 @@ composer ci:check
 
 Tests use in-memory SQLite by default; normal development uses PostgreSQL.
 `composer ci:check` includes frontend formatting/linting, TypeScript, PHP
-formatting, PHPStan, and Pest. Filament will be installed separately; its PHP
-extensions and Laravel S3 adapter are already available.
+formatting, PHPStan, and Pest. Filament's PHP extensions and the Laravel S3 adapter
+are available in the orb.

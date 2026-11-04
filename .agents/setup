@@ -97,6 +97,7 @@ unset db_password
 mkdir -p storage/app/seaweedfs storage/app/orb
 chmod 700 storage/app/seaweedfs
 php artisan migrate --force --no-interaction
+php artisan db:seed --no-interaction
 php artisan storage:link --no-interaction
 
 echo 'Building React assets'
