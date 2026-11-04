@@ -114,7 +114,8 @@ html:has(.family-gazette) {
     letter-spacing: 0.17em;
     text-transform: uppercase;
     text-decoration: none;
-    white-space: nowrap;
+    max-width: 100%;
+    overflow-wrap: anywhere;
 }
 
 .gazette-topline a:last-child {
@@ -166,7 +167,12 @@ html:has(.family-gazette) {
 }
 
 .gazette-running-line p:last-child {
-    flex-shrink: 0;
+    text-align: right;
+}
+
+.gazette-running-line p {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .gazette-cover {

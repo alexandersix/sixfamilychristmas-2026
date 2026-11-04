@@ -32,6 +32,19 @@ class IssueController extends Controller
         $response = Inertia::render('issues/show', [
             'issue' => [
                 'name' => $issue->name,
+                'publication_name' => $issue->publication_name,
+                'motto' => $issue->motto,
+                'edition_description' => $issue->edition_description,
+                'left_navigation_label' => $issue->left_navigation_label,
+                'right_navigation_label' => $issue->right_navigation_label,
+                'cover_photo' => $issue->cover_photo_path ? [
+                    'src' => Storage::disk('s3')->temporaryUrl($issue->cover_photo_path, now()->addHour()),
+                    'alt' => $issue->cover_photo_alt,
+                ] : null,
+                'cover_photo_alt' => $issue->cover_photo_alt,
+                'cover_headline' => $issue->cover_headline,
+                'cover_introduction' => str_replace('{year}', $issue->name, $issue->cover_introduction),
+                'cover_link_label' => $issue->cover_link_label,
                 'events' => $issue->events->map(fn (Event $event): array => [
                     'id' => $event->id,
                     'name' => $event->name,

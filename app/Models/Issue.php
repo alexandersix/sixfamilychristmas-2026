@@ -17,9 +17,25 @@ use Illuminate\Support\Str;
  * @property string $slug
  * @property bool $is_published
  * @property string|null $password
+ * @property string $publication_name
+ * @property string $motto
+ * @property string $edition_description
+ * @property string $left_navigation_label
+ * @property string $right_navigation_label
+ * @property string|null $cover_photo_path
+ * @property string $cover_photo_alt
+ * @property string $cover_headline
+ * @property string $cover_introduction
+ * @property string $cover_link_label
  * @property-read Collection<int, Event> $events
  */
-#[Fillable(['name', 'is_published', 'password'])]
+#[Fillable([
+    'name', 'is_published', 'password',
+    'publication_name', 'motto', 'edition_description',
+    'left_navigation_label', 'right_navigation_label',
+    'cover_photo_path', 'cover_photo_alt', 'cover_headline',
+    'cover_introduction', 'cover_link_label',
+])]
 #[Hidden(['password'])]
 class Issue extends Model
 {

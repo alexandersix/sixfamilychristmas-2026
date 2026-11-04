@@ -44,13 +44,21 @@ class IssueSeeder extends Seeder
                 ['Around the table', 'The best seat was at our table.'],
                 ['First blooms', 'And then, everything bloomed.'],
                 ['At the orchard', 'A basket full of good things.'],
+                ['Slow mornings', 'Nowhere to be but here.'],
+                ['Something sweet', 'Made for sharing.'],
+                ['In the garden', 'Good things take their time.'],
+                ['The afternoon harvest', 'A little sunshine to bring home.'],
+                ['Sunday breakfast', 'A reason to linger.'],
+                ['One more slice', 'There is always room at the table.'],
+                ['Out in the sunshine', 'The ordinary days were the good ones.'],
+                ['Home for the holidays', 'Together is our favorite place.'],
             ] as $index => [$name, $title]) {
                 $event = Event::create([
                     'name' => $name,
                     'title' => $title,
                     'note' => 'A little moment worth keeping.',
                     'body' => '<p>Example story: replace this with a memory from your year. Add a few details, a favorite moment, and the people who made it special.</p><p>These are sample photos, not family photographs. Photo credits (Wikimedia Commons):</p><ul>'.$credits.'</ul>',
-                    'photos' => array_slice($storedPhotos, 0, $index + 1),
+                    'photos' => array_slice($storedPhotos, 0, ($index % 4) + 1),
                 ]);
                 $issue->events()->attach($event);
             }

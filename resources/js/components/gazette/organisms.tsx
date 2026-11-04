@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ActionLink, Heading, Label, RichText } from './atoms';
+import { ActionLink, DisplayLine, Heading, Label, RichText } from './atoms';
 import { Photograph, SectionHeading } from './molecules';
 import type { PhotographProps } from './molecules';
 
@@ -28,7 +28,7 @@ export function Masthead({
                 <a href={right.href}>{right.label}</a>
             </nav>
             <div className="gazette-name">
-                <span>{name}</span>
+                <DisplayLine>{name}</DisplayLine>
             </div>
             <div className="gazette-running-line">
                 <p>{motto}</p>

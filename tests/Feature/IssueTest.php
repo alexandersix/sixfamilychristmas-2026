@@ -198,7 +198,12 @@ test('issue pages hide drafts and return ordered sanitized stories with expiring
     $this->actingAs(User::factory()->create())
         ->get('/issues/2026/preview')
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('preview', true)->has('issue.events', 0)->missing('issue.password'));
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('preview', true)->has('issue.events', 0)->missing('issue.password')
+            ->where('issue.publication_name', 'The Six Family')
+            ->where('issue.cover_headline', "A year to\nhold on to")
+            ->where('issue.cover_introduction', 'The moments, big and small, that made our 2026.')
+            ->where('issue.cover_photo', null));
     $this->get('/issues/2026')->assertNotFound();
 
     $first = Event::factory()->create(['body' => '<p>A <strong>real</strong> story.</p><script>alert(1)</script>']);
@@ -263,10 +268,99 @@ test('sample issue seeding is repeatable and preserves editorial changes', funct
     $this->seed(IssueSeeder::class);
     $issue = Issue::sole();
     expect($issue->slug)->toBe('2026')->and($issue->is_published)->toBeFalse()
-        ->and($issue->events->map(fn (Event $event) => count($event->photos))->all())->toBe([1, 2, 3, 4]);
+        ->and($issue->events->map(fn (Event $event) => count($event->photos))->all())->toBe([1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]);
     $event = $issue->events->first();
     $event->update(['title' => 'Our own headline']);
     $this->seed(IssueSeeder::class);
-    expect(Issue::count())->toBe(1)->and(Event::count())->toBe(4)
+    expect(Issue::count())->toBe(1)->and(Event::count())->toBe(12)
         ->and($event->fresh()->title)->toBe('Our own headline');
+});
+
+test('editors create and edit issue headers with private cover photographs', function () {
+    $this->actingAs(User::factory()->create());
+    $header = [
+        'publication_name' => 'The Six Gazette',
+        'motto' => 'Small moments. Lasting memories.',
+        'edition_description' => 'Our holiday edition',
+        'left_navigation_label' => 'Our stories',
+        'right_navigation_label' => 'With gratitude',
+        'cover_photo_alt' => 'Our family at the beach',
+        'cover_headline' => "Days by\nthe sea",
+        'cover_introduction' => 'Our favorite memories from {year}.',
+        'cover_link_label' => 'Read our stories',
+    ];
+
+    Livewire::test(CreateIssue::class)
+        ->fillForm([...$header, 'name' => '2026', 'cover_photo_path' => [UploadedFile::fake()->image('cover.jpg')]])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $issue = Issue::sole();
+    expect($issue->only(array_keys($header)))->toBe($header);
+    Storage::disk('s3')->assertExists($issue->cover_photo_path);
+    expect(Storage::disk('s3')->getVisibility($issue->cover_photo_path))->toBe('private');
+    $originalPhoto = $issue->cover_photo_path;
+
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->fillForm(['name' => '2027', 'motto' => 'Another year together.', 'is_published' => true])
+        ->call('save')
+        ->assertHasNoFormErrors();
+    expect($issue->fresh()->cover_photo_path)->toBe($originalPhoto)
+        ->and($issue->fresh()->slug)->toBe('2026');
+
+    auth()->logout();
+    $this->get('/issues/2026')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('preview', false)
+        ->where('issue.name', '2027')
+        ->where('issue.publication_name', 'The Six Gazette')
+        ->where('issue.motto', 'Another year together.')
+        ->where('issue.edition_description', 'Our holiday edition')
+        ->where('issue.left_navigation_label', 'Our stories')
+        ->where('issue.right_navigation_label', 'With gratitude')
+        ->where('issue.cover_headline', "Days by\nthe sea")
+        ->where('issue.cover_introduction', 'Our favorite memories from 2027.')
+        ->where('issue.cover_link_label', 'Read our stories')
+        ->where('issue.cover_photo.alt', 'Our family at the beach')
+        ->where('issue.cover_photo.src', fn (string $url) => str_starts_with($url, 'https://photos.example.test/issues/') && str_contains($url, '?expires='))
+        ->missing('issue.cover_photo_path'));
+
+    $this->actingAs(User::first());
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->fillForm(['cover_photo_path' => [UploadedFile::fake()->image('replacement.png')]])
+        ->call('save')->assertHasNoFormErrors();
+    expect($issue->fresh()->cover_photo_path)->not->toBe($originalPhoto);
+    Storage::disk('s3')->assertExists($issue->fresh()->cover_photo_path);
+
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->fillForm(['cover_photo_path' => []])
+        ->call('save')->assertHasNoFormErrors();
+    expect($issue->fresh()->cover_photo_path)->toBeNull();
+    $this->get('/issues/2026/preview')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('preview', true)->where('issue.cover_photo', null)
+        ->where('issue.cover_introduction', 'Our favorite memories from 2027.'));
+});
+
+test('the issue header form rejects invalid content and substituted cover paths', function () {
+    $this->actingAs(User::factory()->create());
+    $issue = Issue::factory()->create(['cover_photo_path' => 'issues/original.jpg']);
+    Storage::disk('s3')->put('issues/original.jpg', 'original');
+    Storage::disk('s3')->put('issues/someone-else.jpg', 'other');
+
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->fillForm(['cover_photo_path' => ['issues/someone-else.jpg']])
+        ->call('save')->assertHasFormErrors(['cover_photo_path']);
+    expect($issue->fresh()->cover_photo_path)->toBe('issues/original.jpg');
+
+    Livewire::test(CreateIssue::class)
+        ->fillForm([
+            'name' => '2026',
+            'publication_name' => '',
+            'cover_photo_alt' => '',
+            'cover_headline' => str_repeat('a', 256),
+            'cover_introduction' => str_repeat('a', 2001),
+            'cover_photo_path' => [UploadedFile::fake()->create('document.pdf', 5, 'application/pdf')],
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['publication_name', 'cover_photo_alt', 'cover_headline', 'cover_introduction', 'cover_photo_path']);
+    expect(Issue::count())->toBe(1);
 });

@@ -1,5 +1,33 @@
+import { useLayoutEffect, useRef } from 'react';
 import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
+
+export function DisplayLine({ children }: { children: string }) {
+    const ref = useRef<HTMLSpanElement>(null);
+
+    useLayoutEffect(() => {
+        const line = ref.current;
+        const parent = line?.parentElement;
+        if (!line || !parent) return;
+
+        const fit = () => {
+            line.style.removeProperty('transform');
+            const scale = new DOMMatrix(getComputedStyle(line).transform).a;
+            line.style.transform = `scaleX(${Math.min(scale, parent.clientWidth / (line.scrollWidth + 1))})`;
+        };
+        const observer = new ResizeObserver(fit);
+        observer.observe(parent);
+        document.fonts.addEventListener('loadingdone', fit);
+        fit();
+
+        return () => {
+            observer.disconnect();
+            document.fonts.removeEventListener('loadingdone', fit);
+        };
+    }, [children]);
+
+    return <span ref={ref}>{children}</span>;
+}
 
 export function Heading({
     as: Tag = 'h2',
