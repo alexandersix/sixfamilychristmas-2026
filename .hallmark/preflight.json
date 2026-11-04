@@ -1,0 +1,23 @@
+{
+    "scanned": "2026-11-04",
+    "findings": {
+        "fonts": "Instrument Sans in resources/css/app.css:8 and vite.config.ts:15",
+        "palette": "Starter homepage only; no locked design.md or brand specification",
+        "motion": "No animation dependency",
+        "spacing": "Tailwind 4, resources/css/app.css:1",
+        "framework": "Laravel 13, Inertia 3, React 19; package.json and composer.json",
+        "routing": "routes/web.php:5 preserves the starter homepage",
+        "material": "Six family, Christmas 2026; placeholder events and library photographs requested"
+    },
+    "preserve": [
+        "Laravel/Inertia/React conventions",
+        "homepage",
+        "admin and database features"
+    ],
+    "introduce": [
+        "option-1 route",
+        "Broadside family annual",
+        "self-hosted photographs",
+        "theme fonts through the existing Vite font pipeline"
+    ]
+}

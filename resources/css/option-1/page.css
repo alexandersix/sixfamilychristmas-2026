@@ -1,0 +1,622 @@
+/* Hallmark · shape: Family annual (draw adapted from Split Studio) · genre: editorial · theme: Broadside (deal 1/3) · job: read · draw: 02ea44
+ * hero: Stage · nav: masthead · footer: letter close · imagery: credited library photographs, ink duotone · signature: fitted Merry everything cover · broadside: bill
+ * axes: light/display-condensed/warm · posture: committed · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H5 E4 S3 R5 V4 · weakest: specificity, placeholder stories will need the family's own photographs and voice. */
+/* Hallmark · waive 23 · committed red cover type and family letter, no competing accent · Broadside's Christmas annual uses vermilion as a deliberate printing ink. */
+/* Hallmark · dismissed 58 · 93 words span the ends of the autumn and December stories in the densest desktop window; the family annual's short paragraphs remain readable beside the photographs. */
+/* Hallmark · answered F18 · React owns photo replacements through the Photo component, rather than a global DOM mutation script. */
+/* Hallmark · hero-review: in-thread, fold and type spacing resolved; red ink intentionally retained · finish-review: in-thread, copy density and letter scale resolved, narrow autumn gap reduced. */
+@import './tokens.css';
+@import './base.css';
+
+.family-annual {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    line-height: 1.6;
+}
+
+.family-annual-page {
+    scroll-behavior: smooth;
+}
+
+.annual-container {
+    width: 100%;
+    max-width: var(--container);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+}
+
+.family-annual a {
+    text-decoration: none;
+}
+
+.family-annual a:hover {
+    color: var(--color-accent);
+}
+
+.family-annual a:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 5px;
+}
+
+.family-annual a:active {
+    opacity: 0.7;
+}
+
+.skip-link {
+    position: fixed;
+    inset-block-start: var(--space-md);
+    inset-inline-start: var(--space-md);
+    z-index: var(--z-toast);
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--color-ink);
+    color: var(--color-paper);
+    transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+    transform: translateY(0);
+}
+
+.annual-masthead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 112px;
+    gap: var(--space-lg);
+    position: relative;
+}
+
+.annual-masthead::after {
+    content: '';
+    position: absolute;
+    inset-inline: var(--gutter);
+    bottom: 0;
+    height: 5px;
+    border-block: 1px solid var(--color-ink);
+}
+
+.annual-wordmark {
+    font-family: var(--font-display-2);
+    font-size: 25px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+}
+
+.annual-masthead nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+    font-size: var(--text-md);
+}
+
+.annual-masthead nav a {
+    padding-block: var(--space-sm);
+}
+
+.masthead-year {
+    font-size: var(--text-sm);
+}
+
+.annual-cover {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    align-items: center;
+    gap: var(--space-2xl);
+    padding-block: var(--space-xl);
+    min-height: calc(100svh - 112px);
+    max-height: 900px;
+}
+
+.cover-type {
+    container-type: inline-size;
+    min-width: 0;
+    padding-bottom: var(--space-lg);
+}
+
+.cover-type h1 {
+    max-width: none;
+    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+    min-width: 0;
+}
+
+.cover-type h1 span {
+    display: block;
+    white-space: nowrap;
+}
+
+.cover-merry {
+    font-family: var(--font-display-2);
+    font-size: 22cqi;
+}
+
+.cover-everything {
+    font-size: 43.5cqi;
+}
+
+.cover-lead {
+    max-width: 45ch;
+    margin-block: var(--space-lg) var(--space-xl);
+    font-size: var(--text-lead);
+    line-height: 1.5;
+}
+
+.annual-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-size: var(--text-md);
+    font-weight: 600;
+}
+
+.family-annual .annual-button:hover {
+    background: var(--color-accent);
+    color: var(--color-paper);
+}
+
+.annual-photo {
+    margin: 0;
+    min-width: 0;
+}
+
+.photo-frame {
+    aspect-ratio: 4 / 3;
+    border: var(--rule-frame) solid var(--color-ink);
+}
+
+.photo-frame::after {
+    content: '';
+    position: absolute;
+    z-index: var(--z-raised);
+    inset: var(--space-2xs);
+    border: 1px solid var(--color-paper);
+    pointer-events: none;
+}
+
+.cover-photo .photo-frame {
+    aspect-ratio: 1;
+    max-height: 640px;
+}
+
+.annual-photo figcaption {
+    margin-top: var(--space-sm);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.cover-photo figcaption {
+    text-align: right;
+}
+
+.year-index {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+    align-items: start;
+    gap: var(--gap-columns);
+    padding-block: var(--space-xl);
+    position: relative;
+}
+
+.year-index::before {
+    content: '';
+    position: absolute;
+    inset-inline: var(--gutter);
+    top: 0;
+    border-top: var(--rule-bar) solid var(--color-ink);
+}
+
+.year-index > p {
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.index-links {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--gap-columns);
+    font-size: var(--text-md);
+}
+
+.index-links a span {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.family-annual h2 {
+    font-family: var(--font-display-2);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    font-size: var(--text-section);
+    line-height: 1.12;
+    text-transform: uppercase;
+    max-width: 20ch;
+    overflow-wrap: break-word;
+    min-width: 0;
+}
+
+.story-folio {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+}
+
+.story-folio > span {
+    font-family: var(--font-display);
+    font-size: 48px;
+    line-height: 1;
+    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.story-folio > p {
+    font-size: var(--text-sm);
+    line-height: 1.4;
+    color: var(--color-muted);
+}
+
+.rich-text {
+    max-width: 55ch;
+    font-size: var(--text-lg);
+    line-height: 1.65;
+}
+
+.rich-text p + p {
+    margin-top: var(--space-lg);
+}
+
+.rich-text strong {
+    font-weight: 600;
+}
+
+.story-copy > .rich-text {
+    margin-top: var(--space-xl);
+}
+
+.spring-story {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.65fr);
+    align-items: center;
+    gap: var(--gap-columns);
+    padding-block: var(--section-gap-s) var(--section-gap);
+}
+
+.spring-photos {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: var(--gap-columns);
+    align-items: center;
+}
+
+.spring-photos .photo-frame {
+    aspect-ratio: 4 / 5;
+}
+
+.stars-photo .photo-frame {
+    aspect-ratio: 3 / 5;
+}
+
+.summer-story {
+    padding-block: var(--section-gap-s);
+    background: var(--color-paper-2);
+    color: var(--color-ink);
+}
+
+.summer-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--gap-columns);
+    margin-bottom: var(--space-2xl);
+}
+
+.summer-heading .story-folio {
+    margin-bottom: 0;
+}
+
+.summer-spread {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: var(--gap-columns);
+    align-items: center;
+}
+
+.beach-photo .photo-frame {
+    aspect-ratio: 1;
+}
+
+.beach-photo img {
+    object-position: 72% 45%;
+}
+
+.summer-aside .photo-frame {
+    aspect-ratio: 16 / 9;
+}
+
+.summer-aside .rich-text {
+    margin-top: var(--space-xl);
+}
+
+.autumn-story {
+    padding-block: var(--section-gap) var(--section-gap-l);
+}
+
+.autumn-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    align-items: end;
+    gap: var(--gap-columns);
+    margin-bottom: var(--space-2xl);
+}
+
+.autumn-heading .story-folio {
+    margin-bottom: 0;
+}
+
+.autumn-story .photo-frame {
+    aspect-ratio: 21 / 9;
+}
+
+.autumn-postscript {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--gap-columns);
+    margin-top: var(--space-2xl);
+}
+
+.story-pull {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 5vw, 72px);
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+.december-story {
+    padding-bottom: var(--section-gap);
+}
+
+.december-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    gap: var(--gap-columns);
+    margin-bottom: var(--space-2xl);
+    padding-top: var(--space-2xl);
+    position: relative;
+}
+
+.december-heading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    inset-inline: 0;
+    border-top: var(--rule-bar) solid var(--color-ink);
+}
+
+.december-photos {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: var(--gap-columns);
+    align-items: end;
+}
+
+.december-photos .annual-photo:first-child .photo-frame {
+    aspect-ratio: 4 / 3;
+}
+
+.december-photos .annual-photo:last-child .photo-frame {
+    aspect-ratio: 1;
+}
+
+.family-letter {
+    padding-block: var(--section-gap-s);
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+}
+
+.family-letter h2 {
+    font-size: clamp(2rem, 5vw, 4.5rem);
+}
+
+.letter-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--gap-columns);
+}
+
+.letter-body {
+    max-width: 55ch;
+    font-size: var(--text-lg);
+    line-height: 1.65;
+}
+
+.letter-body p + p {
+    margin-top: var(--space-lg);
+}
+
+.letter-body .letter-signature {
+    margin-top: var(--space-xl);
+    font-size: var(--text-md);
+}
+
+.letter-signature span {
+    display: inline-block;
+    margin-top: var(--space-sm);
+    font-family: var(--font-display-2);
+    font-size: var(--text-xl);
+}
+
+.annual-footer {
+    padding-block: var(--space-2xl);
+}
+
+.footer-goodbye {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-lg);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--color-rule);
+}
+
+.footer-goodbye a,
+.photo-credits a {
+    text-decoration: underline;
+}
+
+.photo-credits {
+    margin-top: var(--space-xl);
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+}
+
+.photo-credits p {
+    max-width: none;
+}
+
+.photo-credits p + p {
+    margin-top: var(--space-sm);
+}
+
+@media (min-width: 1600px) {
+    .annual-cover {
+        min-height: 870px;
+    }
+}
+
+@media (max-width: 760px) {
+    .annual-masthead {
+        min-height: 120px;
+        flex-wrap: wrap;
+        gap: var(--space-xs) var(--space-md);
+        padding-block: var(--space-lg);
+    }
+
+    .annual-wordmark {
+        font-size: 21px;
+    }
+
+    .annual-masthead nav {
+        width: 100%;
+        order: 1;
+        gap: var(--space-lg);
+        font-size: var(--text-sm);
+    }
+
+    .annual-cover {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-xl);
+        min-height: 0;
+        max-height: none;
+        padding-block: var(--space-xl) var(--space-2xl);
+    }
+
+    .cover-type {
+        padding-bottom: 0;
+    }
+
+    .cover-lead {
+        margin-block: var(--space-lg);
+    }
+
+    .cover-photo .photo-frame {
+        aspect-ratio: 4 / 3;
+    }
+
+    .year-index,
+    .spring-story,
+    .summer-spread,
+    .autumn-heading,
+    .autumn-postscript,
+    .december-heading,
+    .letter-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .index-links {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .spring-story {
+        gap: var(--space-xl);
+    }
+
+    .story-folio {
+        margin-bottom: var(--space-lg);
+    }
+
+    .rich-text,
+    .letter-body {
+        font-size: var(--text-md);
+    }
+
+    .summer-heading {
+        align-items: flex-start;
+        flex-direction: column-reverse;
+        gap: var(--space-lg);
+        margin-bottom: var(--space-xl);
+    }
+
+    .summer-spread {
+        gap: var(--space-xl);
+    }
+
+    .beach-photo .photo-frame {
+        aspect-ratio: 4 / 3;
+    }
+
+    .autumn-heading,
+    .december-heading {
+        gap: var(--space-lg);
+        margin-bottom: var(--space-xl);
+    }
+
+    .autumn-story .photo-frame {
+        aspect-ratio: 4 / 3;
+    }
+
+    .autumn-postscript {
+        margin-top: var(--space-xl);
+    }
+
+    .autumn-story {
+        padding-bottom: var(--space-xl);
+    }
+
+    .december-photos {
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    }
+
+    .december-photos .annual-photo:first-child .photo-frame {
+        aspect-ratio: 4 / 5;
+    }
+
+    .family-letter {
+        padding-block: var(--space-2xl);
+    }
+
+    .footer-goodbye {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .family-annual-page {
+        scroll-behavior: auto;
+    }
+}

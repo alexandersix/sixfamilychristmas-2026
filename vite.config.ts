@@ -16,6 +16,10 @@ export default defineConfig({
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
                 }),
+                bunny('Six Caps', { weights: [400] }),
+                bunny('Bevan', { weights: [400] }),
+                bunny('Archivo Narrow', { weights: [400, 500, 600] }),
+                bunny('Bodoni Moda', { weights: [400, 900] }),
             ],
         }),
         inertia(),

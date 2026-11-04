@@ -1,0 +1,78 @@
+[
+    {
+        "shape": "Family newspaper",
+        "theme": "broadside",
+        "axes": "light/condensed-serif/warm",
+        "hero": "Photographic front page",
+        "nav": "Newspaper running head and chapter index",
+        "footer": "Family letter and photograph colophon",
+        "imagery": "8 self-hosted full-color Wikimedia photographs, responsive WebP",
+        "photos": [
+            "Herbert Lake beim Icefields Parkway.jpg",
+            "Lake Kinney mit Mount Whitehorn.jpg",
+            "Skiing in Oberhof March 2013-12-Ski track.jpg",
+            "Family walking at the evening, cox's bazar .jpg",
+            "Cabines de bain Berck.jpg",
+            "Slezské Beskydy - Rytířská stezka (cesta Nýdek - Velká Čantoryje).JPG",
+            "Kneading (18-366) (24399440891).jpg",
+            "Sourdough.jpg"
+        ],
+        "entry": "/option-2",
+        "fingerprint": "condensed-serif-masthead / lake-photo-front-page / ruled-three-column-winter / seasonal-photo-spreads / cream-letter",
+        "sections": [
+            "front page",
+            "winter",
+            "chapter index",
+            "summer",
+            "autumn",
+            "December",
+            "family note",
+            "colophon"
+        ],
+        "signature": "The Six Family, fitted serif newspaper masthead",
+        "waived": [],
+        "prompt": "Implement the user-selected concept B screenshot at /option-2, preserving /option-1",
+        "reviews": "In-thread reference comparison; desktop chapters and narrow cover inspected",
+        "reference_overrides": "Tracked uppercase running labels and chapter labels; compact newspaper spacing; short-column lede; full-color photos. These deliberately override the generic Hallmark style gates to match the supplied reference.",
+        "date": "2026-11-04",
+        "mode": "build"
+    },
+    {
+        "shape": "Family annual",
+        "theme": "broadside",
+        "axes": "light/display-condensed/warm",
+        "hero": "Stage",
+        "nav": "masthead with season index",
+        "footer": "family letter and photo colophon",
+        "imagery": "8 self-hosted library photographs, ink duotone, responsive WebP",
+        "photos": [
+            "Skiing_in_Oberhof_March_2013-12-Ski_track.jpg",
+            "Mountain_lake,_Mylgval_mountain_cirque_before_sunset,_Caucasus_Mountains.jpg",
+            "036_Milky_Way_during_Perseids_seen_from_Oeschinensee_with_water_reflections_Photo_by_Giles_Laurent.jpg",
+            "Family_walking_at_the_evening,_cox's_bazar_.jpg",
+            "Cabines_de_bain_Berck.jpg",
+            "Slezské_Beskydy_-_Rytířská_stezka_(cesta_Nýdek_-_Velká_Čantoryje).JPG",
+            "Kneading_(18-366)_(24399440891).jpg",
+            "Sourdough.jpg"
+        ],
+        "entry": "/option-1",
+        "fingerprint": "asymmetric-type-cover / season-index / staggered-diptych / tinted-photo-spread / landscape-postscript / kitchen-pair / red-letter",
+        "sections": [
+            "cover",
+            "year index",
+            "mountain trip",
+            "beach week",
+            "autumn walk",
+            "holiday baking",
+            "family note",
+            "photo credits"
+        ],
+        "signature": "Merry everything in two fitted letterpress faces",
+        "waived": ["23: deliberate red printing ink"],
+        "prompt": "Christmas card website for the Six family, 1–4 photos and short rich text per event, closing family note, placeholders, /option-1",
+        "draw": "02ea44",
+        "reviews": "In-thread hero and finish review; fold, spacing, density and narrow gap resolved",
+        "date": "2026-11-04",
+        "mode": "build"
+    }
+]
