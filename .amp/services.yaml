@@ -1,0 +1,36 @@
+services:
+    storage:
+        command: >-
+            credentials=$(php -r 'require "vendor/autoload.php";
+            $dotenv = Dotenv\Dotenv::createImmutable(getcwd());
+            $dotenv->load();
+            $dotenv->required(["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"])->notEmpty();
+            foreach (["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"] as $key)
+            echo "export ".$key."=".escapeshellarg($_ENV[$key]).";";') &&
+            eval "$credentials" &&
+            exec weed mini -dir=storage/app/seaweedfs -ip=127.0.0.1 -ip.bind=127.0.0.1 -bucket=christmas-photos
+        port: 8333
+        health: /healthz
+    laravel:
+        command: >-
+            php artisan config:clear &&
+            php artisan migrate --force --no-interaction &&
+            exec php artisan serve --host=127.0.0.1 --port="$PORT" --no-reload
+        port: 8000
+        health: /up
+        env:
+            APP_URL: ${services.web.publicURL}
+            ASSET_URL: ${services.web.publicURL}
+            AWS_ENDPOINT: ${services.web.publicURL}
+    queue:
+        command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
+        env:
+            APP_URL: ${services.web.publicURL}
+            AWS_ENDPOINT: ${services.web.publicURL}
+    web:
+        command: /usr/sbin/nginx -p "$PWD/" -c .agents/nginx.conf -g 'daemon off;'
+        port: 8080
+        health: /orb-health
+        portal:
+            title: Christmas Card
+            description: Laravel + React preview. Filament and the card password will be added later.

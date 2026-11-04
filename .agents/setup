@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+echo 'Installing PHP 8.4, PostgreSQL, and photo-upload prerequisites'
+packages=(php8.4-cli php8.4-curl php8.4-mbstring php8.4-xml php8.4-zip
+    php8.4-pgsql php8.4-sqlite3 php8.4-intl php8.4-gd php8.4-bcmath postgresql nginx)
+missing=()
+for package in "${packages[@]}"; do
+    dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -q 'install ok installed' || missing+=("$package")
+done
+if ((${#missing[@]})); then
+    sudo install -d /usr/share/keyrings
+    curl -fsSL https://packages.sury.org/php/apt.gpg | sudo tee /usr/share/keyrings/sury-php.gpg >/dev/null
+    echo 'deb [signed-by=/usr/share/keyrings/sury-php.gpg] https://packages.sury.org/php/ bookworm main' |
+        sudo tee /etc/apt/sources.list.d/sury-php.list >/dev/null
+    sudo apt-get update -qq
+    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${missing[@]}"
+fi
+sudo update-alternatives --set php /usr/bin/php8.4
+printf 'upload_max_filesize=32M\npost_max_size=140M\nmemory_limit=512M\n' |
+    sudo tee /etc/php/8.4/cli/conf.d/99-orb.ini >/dev/null
+
+if ! command -v composer >/dev/null; then
+    installer=$(mktemp)
+    curl -fsSL https://getcomposer.org/installer -o "$installer"
+    expected=$(curl -fsSL https://composer.github.io/installer.sig)
+    test "$(sha384sum "$installer" | cut -d ' ' -f 1)" = "$expected"
+    php "$installer" --quiet --install-dir="$(dirname "$installer")" --filename=composer.phar
+    sudo install "$(dirname "$installer")/composer.phar" /usr/local/bin/composer
+    rm "$installer" "$(dirname "$installer")/composer.phar"
+fi
+
+echo 'Installing SeaweedFS (S3-compatible object storage)'
+if ! command -v weed >/dev/null || ! weed version | grep -Fq ' 4.52 '; then
+    download=$(mktemp -d)
+    curl -fsSL https://github.com/seaweedfs/seaweedfs/releases/download/4.52/linux_amd64.tar.gz -o "$download/weed.tar.gz"
+    echo "8b538c22d47d0c3fb6792adaa6b0c735a967401270a53427d5a476dcaca9b7ae  $download/weed.tar.gz" | sha256sum --check
+    tar -xzf "$download/weed.tar.gz" -C "$download" weed
+    sudo install "$download/weed" /usr/local/bin/weed
+    rm -r "$download"
+fi
+
+echo 'Installing locked application dependencies'
+composer install --no-interaction --prefer-dist
+npm ci
+
+if [ ! -f .env ]; then
+    cp .env.example .env
+    php <<'PHP'
+<?php
+$values = [
+    'DB_CONNECTION' => 'pgsql',
+    'DB_HOST' => '127.0.0.1',
+    'DB_PORT' => '5432',
+    'DB_DATABASE' => 'christmas',
+    'DB_USERNAME' => 'christmas',
+    'DB_PASSWORD' => bin2hex(random_bytes(24)),
+    'FILESYSTEM_DISK' => 's3',
+    'AWS_ACCESS_KEY_ID' => 'christmas-orb',
+    'AWS_SECRET_ACCESS_KEY' => bin2hex(random_bytes(32)),
+    'AWS_DEFAULT_REGION' => 'us-east-1',
+    'AWS_BUCKET' => 'christmas-photos',
+    'AWS_ENDPOINT' => 'http://127.0.0.1:8333',
+    'AWS_USE_PATH_STYLE_ENDPOINT' => 'true',
+];
+$env = file_get_contents('.env');
+foreach ($values as $key => $value) {
+    $pattern = '/^#? ?'.preg_quote($key, '/').'=.*/m';
+    $line = $key.'='.$value;
+    $env = preg_match($pattern, $env) ? preg_replace($pattern, $line, $env) : $env."\n".$line."\n";
+}
+file_put_contents('.env', $env);
+chmod('.env', 0600);
+PHP
+fi
+php artisan config:clear
+if ! grep -q '^APP_KEY=base64:' .env; then
+    php artisan key:generate --no-interaction
+fi
+
+echo 'Preparing PostgreSQL and private photo storage'
+# Systemd owns PostgreSQL so it starts again in restored orb snapshots.
+sudo systemctl enable --now postgresql
+db_password=$(php -r 'require "vendor/autoload.php"; Dotenv\Dotenv::createImmutable(__DIR__)->load(); echo $_ENV["DB_PASSWORD"];')
+# Provision only this orb's default database. Never reset an existing role or data.
+if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname = 'christmas'" | grep -q 1; then
+    # psql quotes the password as a SQL literal, even if an existing .env uses punctuation.
+    sudo -u postgres psql -v ON_ERROR_STOP=1 -v "password=$db_password" <<'SQL'
+CREATE ROLE christmas LOGIN PASSWORD :'password';
+SQL
+fi
+if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname = 'christmas'" | grep -q 1; then
+    sudo -u postgres createdb --owner=christmas christmas
+fi
+unset db_password
+mkdir -p storage/app/seaweedfs storage/app/orb
+chmod 700 storage/app/seaweedfs
+php artisan migrate --force --no-interaction
+php artisan storage:link --no-interaction
+
+echo 'Building React assets'
+npm run build
+echo 'Orb prepared. Run: amp orb services ensure'
