@@ -1,0 +1,320 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import '../../gazette-tokens.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/* Keep Filament's layouts and state semantics; share the reader's paper and ink. */
+:root {
+    color-scheme: light;
+    --gray-50: var(--gazette-paper);
+    --gray-100: var(--gazette-edge);
+    --gray-200: var(--gazette-rule);
+    --gray-300: var(--gazette-rule);
+    --gray-400: var(--gazette-muted);
+    --gray-500: var(--gazette-muted);
+    --gray-600: var(--gazette-muted);
+    --gray-700: var(--gazette-ink);
+    --gray-800: var(--gazette-ink);
+    --gray-900: var(--gazette-ink);
+    --gray-950: var(--gazette-ink);
+    --primary-600: var(--gazette-accent);
+    --primary-700: var(--gazette-accent);
+}
+
+.fi-body {
+    --topbar-height: 5.5rem;
+    background: var(--gazette-paper);
+    background-image: radial-gradient(
+        ellipse at center,
+        transparent 45%,
+        var(--gazette-edge)
+    );
+    color: var(--gazette-ink);
+    font-family: var(--gazette-body);
+}
+
+.fi-body ::selection {
+    background: var(--gazette-accent);
+    color: var(--gazette-paper);
+}
+
+.fi-body :is(a, button, input, textarea, select, [tabindex]):focus-visible {
+    outline: 2px solid var(--gazette-accent);
+    outline-offset: 4px;
+}
+
+.fi-topbar,
+.fi-sidebar-header {
+    background: var(--gazette-paper);
+    border-bottom: var(--gazette-rule-double);
+    box-shadow: none;
+}
+
+.fi-topbar {
+    padding-inline: var(--gazette-space-6);
+}
+
+.fi-sidebar {
+    background: var(--gazette-paper);
+    border-inline-end: var(--gazette-rule-thin);
+    box-shadow: none;
+}
+
+.gazette-admin-brand {
+    display: grid;
+    gap: var(--gazette-space-2);
+    color: var(--gazette-ink);
+    text-align: center;
+}
+
+.gazette-admin-wordmark {
+    font-family: var(--gazette-display);
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: var(--gazette-tracking-heading);
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.gazette-admin-kicker,
+.fi-sidebar-item-label,
+.fi-sidebar-group-label,
+.fi-breadcrumbs,
+.fi-ta-header-cell {
+    font-size: var(--gazette-text-label);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    line-height: 1.6;
+    text-transform: uppercase;
+}
+
+.gazette-admin-kicker {
+    color: var(--gazette-accent);
+}
+
+.fi-sidebar-item-label,
+.fi-sidebar-group-label,
+.fi-breadcrumbs {
+    font-size: var(--gazette-text-caption);
+}
+
+.fi-sidebar-item-btn {
+    min-height: 44px;
+    border-bottom: var(--gazette-rule-thin);
+    border-radius: 0;
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background: var(--gazette-edge);
+    border-inline-start: 3px solid var(--gazette-accent);
+}
+
+.fi-sidebar-item-btn:hover {
+    background: var(--gazette-edge);
+}
+
+.fi-header {
+    padding-bottom: var(--gazette-space-6);
+    border-bottom: var(--gazette-rule-double);
+}
+
+.fi-header-heading,
+.fi-simple-header-heading {
+    font-family: var(--gazette-slab);
+    font-size: clamp(26px, 3vw, 38px);
+    font-weight: 400;
+    letter-spacing: var(--gazette-tracking-heading);
+    line-height: 1.25;
+}
+
+.fi-section-header-heading,
+.fi-ta-header-heading,
+.fi-modal-heading,
+.fi-ta-empty-state-heading {
+    font-family: var(--gazette-slab);
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.fi-section,
+.fi-ta-ctn,
+.fi-simple-main,
+.fi-modal-window,
+.fi-dropdown-panel,
+.fi-no-notification,
+.fi-fo-repeater-item {
+    background: var(--gazette-paper);
+    border: var(--gazette-rule-thin);
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.fi-section,
+.fi-ta-ctn {
+    border-top: var(--gazette-rule-ink);
+}
+
+.fi-section-header,
+.fi-ta-header,
+.fi-ta-header-toolbar,
+.fi-modal-header,
+.fi-fo-repeater-item-header {
+    background: var(--gazette-edge);
+}
+
+.fi-section-header {
+    border-bottom: var(--gazette-rule-thin);
+}
+
+.fi-section-content-ctn {
+    border-top: 0;
+}
+
+.fi-ta-header-cell {
+    background: var(--gazette-edge);
+    padding-block: var(--gazette-space-4);
+}
+
+.fi-ta-row:not(.fi-selected):hover {
+    background: var(--gazette-edge);
+}
+
+.fi-ta-text-item {
+    font-size: var(--gazette-text-action);
+}
+
+.fi-input-wrp,
+.fi-fo-textarea,
+.fi-fo-rich-editor,
+.fi-fo-file-upload .filepond--root {
+    background: var(--gazette-paper);
+    border-radius: 0;
+    box-shadow: 0 0 0 1px var(--gazette-rule);
+}
+
+.fi-input,
+.fi-select-input,
+.fi-fo-textarea textarea,
+.fi-fo-rich-editor .tiptap {
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.fi-input-wrp.fi-disabled {
+    background: var(--gazette-edge);
+}
+
+.fi-input-wrp.fi-invalid {
+    box-shadow: 0 0 0 1px var(--danger-600);
+}
+
+.fi-input-wrp:focus-within,
+.fi-fo-textarea:focus-within,
+.fi-fo-rich-editor:focus-within {
+    outline: 2px solid var(--gazette-accent);
+    outline-offset: 2px;
+}
+
+/* The field wrapper carries focus, not a second outline around its text. */
+.fi-body .fi-input-wrp :is(input, textarea, select):focus-visible,
+.fi-body .fi-fo-rich-editor .tiptap:focus-visible {
+    outline: none;
+}
+
+.fi-fo-rich-editor-toolbar,
+.fi-fo-rich-editor .fi-fo-rich-editor-sticky-toolbar {
+    background: var(--gazette-edge);
+    border-color: var(--gazette-rule);
+    border-radius: 0;
+}
+
+.fi-btn,
+.fi-icon-btn,
+.fi-dropdown-list-item,
+.fi-tabs,
+.fi-tabs-item,
+.fi-badge,
+.fi-pagination-item-btn,
+.fi-fo-rich-editor-tool {
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.fi-btn {
+    min-height: 44px;
+    border: var(--gazette-rule-thin);
+    font-size: var(--gazette-text-action);
+    font-weight: 700;
+}
+
+/* Primary actions use ink; red remains an editorial accent and focus signal. */
+.fi-btn.fi-color-primary:not(.fi-outlined) {
+    background: var(--gazette-ink);
+    border-color: var(--gazette-ink);
+    color: var(--gazette-paper);
+}
+
+.fi-btn.fi-color-primary:not(.fi-outlined):not([disabled]):hover {
+    background: var(--gazette-accent);
+    border-color: var(--gazette-accent);
+    color: var(--gazette-paper);
+}
+
+.fi-btn.fi-color-primary > .fi-icon {
+    color: inherit;
+}
+
+.fi-btn:not(.fi-color):not(.fi-outlined) {
+    background: transparent;
+}
+
+input[type='checkbox'].fi-checkbox-input {
+    border-radius: 0;
+}
+
+input[type='checkbox'].fi-checkbox-input:not(:checked):not(:indeterminate) {
+    background-color: var(--gazette-paper);
+    box-shadow: 0 0 0 1px var(--gazette-rule);
+}
+
+.fi-simple-main {
+    margin-inline: var(--gazette-space-4);
+    border-top: var(--gazette-rule-double);
+    border-bottom: var(--gazette-rule-double);
+}
+
+.fi-simple-header .gazette-admin-brand {
+    margin-bottom: var(--gazette-space-8);
+    padding-bottom: var(--gazette-space-6);
+    border-bottom: var(--gazette-rule-ink);
+}
+
+.fi-simple-header .gazette-admin-wordmark {
+    font-size: clamp(28px, 6vw, 38px);
+}
+
+@media (max-width: 680px) {
+    .fi-body {
+        --topbar-height: 4.5rem;
+    }
+
+    .fi-header {
+        padding-bottom: var(--gazette-space-4);
+    }
+
+    .fi-simple-main {
+        width: calc(100% - 32px);
+        padding: var(--gazette-space-8) var(--gazette-space-6);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fi-body *,
+    .fi-body *::before,
+    .fi-body *::after {
+        transition-duration: 0s !important;
+        animation-duration: 0s !important;
+    }
+}
