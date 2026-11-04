@@ -7,7 +7,9 @@ import {
     DisplayLine,
     Footer,
     GazettePage,
+    Letter,
     Masthead,
+    Signature,
 } from '@/components/gazette';
 import type { ChapterProps } from '@/components/gazette';
 
@@ -23,6 +25,13 @@ type Issue = {
     cover_headline: string;
     cover_introduction: string;
     cover_link_label: string;
+    last_word: {
+        title: string;
+        salutation: string;
+        body: string;
+        sign_off: string;
+        signature: string;
+    } | null;
     events: {
         id: number;
         name: string;
@@ -53,7 +62,9 @@ export default function IssuePage({
                         label: issue.left_navigation_label,
                     }}
                     right={{
-                        href: '#gazette-footer',
+                        href: issue.last_word
+                            ? '#gazette-note'
+                            : '#gazette-footer',
                         label: issue.right_navigation_label,
                     }}
                     motto={issue.motto}
@@ -154,6 +165,31 @@ export default function IssuePage({
                     />
                 </Chapter>
             ))}
+            {issue.last_word && (
+                <Letter
+                    id="gazette-note"
+                    label="The Last Word"
+                    title={
+                        <span className="whitespace-pre-line">
+                            {issue.last_word.title}
+                        </span>
+                    }
+                    year={issue.name}
+                    salutation={issue.last_word.salutation}
+                    signature={
+                        <Signature name={issue.last_word.signature}>
+                            {issue.last_word.sign_off}
+                        </Signature>
+                    }
+                >
+                    <div
+                        className="contents"
+                        dangerouslySetInnerHTML={{
+                            __html: issue.last_word.body,
+                        }}
+                    />
+                </Letter>
+            )}
         </GazettePage>
     );
 }

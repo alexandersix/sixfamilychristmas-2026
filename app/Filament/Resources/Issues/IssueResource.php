@@ -11,11 +11,14 @@ use BackedEnum;
 use Closure;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -83,7 +86,7 @@ class IssueResource extends Resource
                             ->helperText('Links to this issue’s contents.'),
                         TextInput::make('right_navigation_label')
                             ->default('With love')->required()->maxLength(255)
-                            ->helperText('Links to the footer.'),
+                            ->helperText('Links to The Last Word when enabled, otherwise to the footer.'),
                     ])->columnSpanFull(),
                 Section::make('Cover')
                     ->schema([
@@ -111,6 +114,39 @@ class IssueResource extends Resource
                         TextInput::make('cover_link_label')
                             ->default('Open our year')->required()->maxLength(255)
                             ->helperText('Links to this issue’s contents.'),
+                    ])->columnSpanFull(),
+                Section::make('The Last Word')
+                    ->description('An optional closing letter after the events. The year comes from the issue name.')
+                    ->schema([
+                        Toggle::make('show_last_word')
+                            ->label('Show The Last Word')
+                            ->helperText('Turn off to hide the section without deleting your letter.')
+                            ->default(false)->live(),
+                        Group::make([
+                            Textarea::make('last_word_title')
+                                ->label('Heading')
+                                ->default("A note from\nthe family")
+                                ->helperText('Use a new line to choose where the heading breaks.')
+                                ->rows(2)->required()->maxLength(255),
+                            TextInput::make('last_word_salutation')
+                                ->label('Salutation')
+                                ->default('Dear friends and family,')->required()->maxLength(255),
+                            RichEditor::make('last_word_body')
+                                ->label('Letter')
+                                ->toolbarButtons([
+                                    ['bold', 'italic', 'link'],
+                                    ['bulletList', 'orderedList'],
+                                    ['undo', 'redo'],
+                                ])
+                                ->required(),
+                            TextInput::make('last_word_sign_off')
+                                ->label('Sign-off')
+                                ->default('With love,')->required()->maxLength(255),
+                            TextInput::make('last_word_signature')
+                                ->label('Signature')
+                                ->helperText('Leave blank to use the family / publication name.')
+                                ->maxLength(255),
+                        ])->visible(fn (Get $get): bool => (bool) $get('show_last_word')),
                     ])->columnSpanFull(),
             ]);
     }

@@ -203,6 +203,7 @@ test('issue pages hide drafts and return ordered sanitized stories with expiring
             ->where('issue.publication_name', 'The Six Family')
             ->where('issue.cover_headline', "A year to\nhold on to")
             ->where('issue.cover_introduction', 'The moments, big and small, that made our 2026.')
+            ->where('issue.last_word', null)
             ->where('issue.cover_photo', null));
     $this->get('/issues/2026')->assertNotFound();
 
@@ -264,15 +265,36 @@ test('editors cannot substitute a photo path belonging to another event', functi
     expect($event->fresh()->photos[0]['alt'])->toBe('A family memory');
 });
 
-test('sample issue seeding is repeatable and preserves editorial changes', function () {
+test('sample issue seeding adds complete issues without changing existing data', function () {
     $this->seed(IssueSeeder::class);
     $issue = Issue::sole();
     expect($issue->slug)->toBe('2026')->and($issue->is_published)->toBeFalse()
+        ->and($issue->password)->not->toBe('password')
+        ->and(Hash::check('password', $issue->password))->toBeTrue()
+        ->and($issue->show_last_word)->toBeTrue()
+        ->and($issue->last_word_title)->toBe("A note from\nthe family")
+        ->and($issue->last_word_body)->toContain('What a gift to look back on another year together.', 'Wishing you a peaceful Christmas and a new year full of good things.')
         ->and($issue->events->map(fn (Event $event) => count($event->photos))->all())->toBe([1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]);
     $event = $issue->events->first();
     $event->update(['title' => 'Our own headline']);
+    $issue->update([
+        'password' => 'our-own-password',
+        'show_last_word' => false,
+        'last_word_body' => '<p>Our own closing letter.</p>',
+    ]);
+    $passwordHash = $issue->password;
     $this->seed(IssueSeeder::class);
-    expect(Issue::count())->toBe(1)->and(Event::count())->toBe(12)
+    $next = Issue::where('slug', '2026-2')->sole();
+    expect(Issue::count())->toBe(2)->and(Event::count())->toBe(24)
+        ->and($next->events)->toHaveCount(12)
+        ->and(Hash::check('password', $next->password))->toBeTrue()
+        ->and($next->show_last_word)->toBeTrue()
+        ->and($next->last_word_body)->toContain('What a gift to look back on another year together.')
+        ->and($next->events->first()->photos[0]['path'])->not->toBe($event->photos[0]['path'])
+        ->and($issue->fresh()->password)->toBe($passwordHash)
+        ->and(Hash::check('our-own-password', $issue->fresh()->password))->toBeTrue()
+        ->and($issue->fresh()->show_last_word)->toBeFalse()
+        ->and($issue->fresh()->last_word_body)->toBe('<p>Our own closing letter.</p>')
         ->and($event->fresh()->title)->toBe('Our own headline');
 });
 
@@ -363,4 +385,61 @@ test('the issue header form rejects invalid content and substituted cover paths'
         ->call('create')
         ->assertHasFormErrors(['publication_name', 'cover_photo_alt', 'cover_headline', 'cover_introduction', 'cover_photo_path']);
     expect(Issue::count())->toBe(1);
+});
+
+test('editors write edit and hide the optional Last Word without losing the letter', function () {
+    $this->actingAs(User::factory()->create());
+    $letter = [
+        'show_last_word' => true,
+        'last_word_title' => "A little note\nfrom home",
+        'last_word_salutation' => 'Dear loved ones,',
+        'last_word_body' => '<p>Thank you for a <strong>wonderful</strong> year.</p>',
+        'last_word_sign_off' => 'With gratitude,',
+        'last_word_signature' => 'Alex and family',
+    ];
+
+    Livewire::test(CreateIssue::class)
+        ->fillForm(['name' => '2026', 'show_last_word' => true, 'last_word_body' => null])
+        ->call('create')->assertHasFormErrors(['last_word_body'])
+        ->fillForm($letter)
+        ->call('create')->assertHasNoFormErrors();
+    $issue = Issue::sole();
+    expect($issue->only(array_keys($letter)))->toBe($letter);
+
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->fillForm(['name' => '2027', 'is_published' => true, 'last_word_title' => "Until next time,\nfriends"])
+        ->call('save')->assertHasNoFormErrors();
+    $this->get('/issues/2026/preview')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('preview', true)->where('issue.last_word.title', "Until next time,\nfriends"));
+    auth()->logout();
+    $this->get('/issues/2026')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('issue.name', '2027')
+        ->where('issue.last_word.title', "Until next time,\nfriends")
+        ->where('issue.last_word.salutation', 'Dear loved ones,')
+        ->where('issue.last_word.sign_off', 'With gratitude,')
+        ->where('issue.last_word.signature', 'Alex and family')
+        ->where('issue.last_word.body', '<p>Thank you for a <strong>wonderful</strong> year.</p>'));
+
+    $this->actingAs(User::first());
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->fillForm(['show_last_word' => false])
+        ->call('save')->assertHasNoFormErrors();
+    expect($issue->fresh()->last_word_body)->toBe($letter['last_word_body']);
+    $this->get('/issues/2026')->assertOk()->assertInertia(fn (Assert $page) => $page->where('issue.last_word', null));
+
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->fillForm(['show_last_word' => true, 'last_word_signature' => '', 'publication_name' => 'Our Family Gazette'])
+        ->call('save')->assertHasNoFormErrors();
+    $this->get('/issues/2026')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('issue.last_word.signature', 'Our Family Gazette')
+        ->where('issue.last_word.title', "Until next time,\nfriends"));
+});
+
+test('issue pages sanitize Last Word rich text before sending it to readers', function () {
+    $issue = Issue::factory()->published()->create([
+        'show_last_word' => true,
+        'last_word_body' => '<p>With <em>love</em>.</p><script>alert(1)</script><img src="x" onerror="alert(1)">',
+    ]);
+    $this->get('/issues/'.$issue->slug)->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('issue.last_word.body', fn (string $body) => str_contains($body, '<em>love</em>') && ! str_contains($body, '<script') && ! str_contains($body, 'onerror')));
 });

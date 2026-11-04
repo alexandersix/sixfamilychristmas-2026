@@ -8,13 +8,14 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class IssueSeeder extends Seeder
 {
     public function run(): void
     {
-        if (! app()->environment('local', 'testing') || Issue::where('slug', '2026')->exists()) {
+        if (! app()->environment('local', 'testing')) {
             return;
         }
 
@@ -25,10 +26,11 @@ class IssueSeeder extends Seeder
             ['apple-basket', 'A basket of freshly picked apples', 'George Chernilevsky, public domain', 'Apples in basket 2018 G1.jpg'],
         ];
 
+        $photoDirectory = 'events/demo/'.Str::uuid();
         $storedPhotos = [];
         $credits = '';
         foreach ($photos as [$name, $alt, $credit, $source]) {
-            $path = 'events/demo/'.$name.'.webp';
+            $path = $photoDirectory.'/'.$name.'.webp';
             if (! Storage::disk('s3')->put($path, File::get(public_path('images/option-2/'.$name.'-1920.webp')), 'private')) {
                 throw new RuntimeException('Could not store sample photographs. Check the S3 configuration.');
             }
@@ -37,7 +39,12 @@ class IssueSeeder extends Seeder
         }
 
         DB::transaction(function () use ($storedPhotos, $credits): void {
-            $issue = Issue::create(['name' => '2026']);
+            $issue = Issue::create([
+                'name' => '2026',
+                'password' => 'password',
+                'show_last_word' => true,
+                'last_word_body' => '<p>What a gift to look back on another year together. For all the places we went, it’s the people who made it feel full. That includes you.</p><p>Thank you for being part of our lives, whether you’re down the road or far away. Wishing you a peaceful Christmas and a new year full of good things.</p>',
+            ]);
 
             foreach ([
                 ['Birthday breakfast', 'Another candle. Another slice.'],

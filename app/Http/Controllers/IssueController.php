@@ -45,6 +45,13 @@ class IssueController extends Controller
                 'cover_headline' => $issue->cover_headline,
                 'cover_introduction' => str_replace('{year}', $issue->name, $issue->cover_introduction),
                 'cover_link_label' => $issue->cover_link_label,
+                'last_word' => $issue->show_last_word ? [
+                    'title' => $issue->last_word_title,
+                    'salutation' => $issue->last_word_salutation,
+                    'body' => Str::sanitizeHtml($issue->last_word_body ?? ''),
+                    'sign_off' => $issue->last_word_sign_off,
+                    'signature' => $issue->last_word_signature ?: $issue->publication_name,
+                ] : null,
                 'events' => $issue->events->map(fn (Event $event): array => [
                     'id' => $event->id,
                     'name' => $event->name,

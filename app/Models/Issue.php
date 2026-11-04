@@ -27,6 +27,12 @@ use Illuminate\Support\Str;
  * @property string $cover_headline
  * @property string $cover_introduction
  * @property string $cover_link_label
+ * @property bool $show_last_word
+ * @property string $last_word_title
+ * @property string $last_word_salutation
+ * @property string|null $last_word_body
+ * @property string $last_word_sign_off
+ * @property string|null $last_word_signature
  * @property-read Collection<int, Event> $events
  */
 #[Fillable([
@@ -35,6 +41,8 @@ use Illuminate\Support\Str;
     'left_navigation_label', 'right_navigation_label',
     'cover_photo_path', 'cover_photo_alt', 'cover_headline',
     'cover_introduction', 'cover_link_label',
+    'show_last_word', 'last_word_title', 'last_word_salutation',
+    'last_word_body', 'last_word_sign_off', 'last_word_signature',
 ])]
 #[Hidden(['password'])]
 class Issue extends Model
@@ -60,6 +68,7 @@ class Issue extends Model
         return [
             'is_published' => 'boolean',
             'password' => 'hashed',
+            'show_last_word' => 'boolean',
         ];
     }
 
