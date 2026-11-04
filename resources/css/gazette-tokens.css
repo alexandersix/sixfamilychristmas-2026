@@ -1,0 +1,45 @@
+:root {
+    --gazette-paper: #f0ebdb;
+    --gazette-edge: #e8e2ce;
+    --gazette-ink: #181914;
+    --gazette-muted: #555344;
+    --gazette-rule: #aaa184;
+    --gazette-accent: #9d3028;
+    --gazette-display: 'Bodoni Moda', 'Times New Roman', serif;
+    --gazette-slab: 'Bevan', Georgia, serif;
+    --gazette-body: Georgia, 'Times New Roman', serif;
+    --gazette-measure: 1040px;
+    --gazette-prose: 52ch;
+    --gazette-gap: clamp(20px, 3vw, 38px);
+    --gazette-space-1: 4px;
+    --gazette-space-2: 8px;
+    --gazette-space-3: 12px;
+    --gazette-space-4: 16px;
+    --gazette-space-5: 20px;
+    --gazette-space-6: 24px;
+    --gazette-space-7: 28px;
+    --gazette-space-8: 32px;
+    --gazette-space-10: 42px;
+    --gazette-space-16: 64px;
+    --gazette-text-label: 10px;
+    --gazette-text-caption: 12px;
+    --gazette-text-small: 13px;
+    --gazette-text-action: 15px;
+    --gazette-text-body: 17px;
+    --gazette-text-deck: clamp(18px, 1.65vw, 21px);
+    --gazette-text-note: 30px;
+    --gazette-text-heading: clamp(32px, 3.7vw, 48px);
+    --gazette-text-feature: clamp(38px, 4.7vw, 62px);
+    --gazette-text-letter: clamp(44px, 5vw, 68px);
+    --gazette-leading-body: 1.7;
+    --gazette-leading-heading: 1.12;
+    --gazette-tracking-label: 0.23em;
+    --gazette-tracking-heading: -0.045em;
+    --gazette-rule-thin: 1px solid var(--gazette-rule);
+    --gazette-rule-ink: 1px solid var(--gazette-ink);
+    --gazette-rule-double: 4px double var(--gazette-ink);
+}
+
+:root:has(.family-gazette) {
+    color-scheme: light;
+}

@@ -4,29 +4,16 @@
 /* Hallmark · pre-emit critique: P5 H5 E5 S4 R5 V4 · material: placeholder photographs, not the family's own images. */
 /* Hallmark · reference override: tracked uppercase running labels, serif display and full-color photography reproduce the user's explicitly selected concept B. */
 
-:root:has(.family-gazette) {
-    --gazette-paper: #f0ebdb;
-    --gazette-edge: #e8e2ce;
-    --gazette-ink: #181914;
-    --gazette-muted: #555344;
-    --gazette-rule: #aaa184;
-    --gazette-accent: #9d3028;
-    --gazette-display: 'Bodoni Moda', 'Times New Roman', serif;
-    --gazette-slab: 'Bevan', Georgia, serif;
-    --gazette-body: Georgia, 'Times New Roman', serif;
-    --gazette-measure: 1040px;
-    --gazette-gap: clamp(20px, 3vw, 38px);
-    color-scheme: light;
-}
+@import './gazette-tokens.css';
 
 .family-gazette {
     background: var(--gazette-paper);
     color: var(--gazette-ink);
     font-family: var(--gazette-body);
-    font-size: 17px;
+    font-size: var(--gazette-text-body);
     line-height: 1.6;
     min-height: 100svh;
-    padding: 24px;
+    padding: var(--gazette-space-6);
     -webkit-font-smoothing: antialiased;
     background-image: radial-gradient(
         ellipse at center,
@@ -91,7 +78,7 @@ html:has(.family-gazette) {
 .gazette-paper {
     max-width: var(--gazette-measure);
     margin-inline: auto;
-    border: 1px solid var(--gazette-rule);
+    border: var(--gazette-rule-thin);
     padding: 0 clamp(18px, 2.5vw, 32px);
 }
 
@@ -114,9 +101,9 @@ html:has(.family-gazette) {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    gap: 16px;
+    gap: var(--gazette-space-4);
     min-height: 64px;
-    border-bottom: 1px solid var(--gazette-ink);
+    border-bottom: var(--gazette-rule-ink);
 }
 
 .gazette-topline a {
@@ -145,8 +132,8 @@ html:has(.family-gazette) {
 
 .gazette-name {
     container-type: inline-size;
-    border-bottom: 1px solid var(--gazette-ink);
-    padding-block: 8px 8px;
+    border-bottom: var(--gazette-rule-ink);
+    padding-block: var(--gazette-space-2);
     overflow: clip;
 }
 
@@ -169,10 +156,10 @@ html:has(.family-gazette) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
-    border-bottom: 4px double var(--gazette-ink);
+    gap: var(--gazette-space-5);
+    border-bottom: var(--gazette-rule-double);
     padding-block: 10px;
-    font-size: 10px;
+    font-size: var(--gazette-text-label);
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -185,9 +172,9 @@ html:has(.family-gazette) {
 .gazette-cover {
     display: grid;
     grid-template-columns: minmax(0, 1.42fr) minmax(0, 1fr);
-    margin-top: 16px;
-    border-bottom: 4px double var(--gazette-ink);
-    padding-bottom: 16px;
+    margin-top: var(--gazette-space-4);
+    border-bottom: var(--gazette-rule-double);
+    padding-bottom: var(--gazette-space-4);
 }
 
 .gazette-photograph {
@@ -202,9 +189,9 @@ html:has(.family-gazette) {
 }
 
 .gazette-photograph figcaption {
-    margin-top: 12px;
+    margin-top: var(--gazette-space-3);
     color: var(--gazette-muted);
-    font-size: 12px;
+    font-size: var(--gazette-text-caption);
     font-weight: 700;
     line-height: 1.7;
     letter-spacing: 0.15em;
@@ -220,13 +207,13 @@ html:has(.family-gazette) {
 
 .gazette-cover-copy {
     container-type: inline-size;
-    border-left: 1px solid var(--gazette-rule);
-    margin-left: 16px;
-    padding-left: 24px;
+    border-left: var(--gazette-rule-thin);
+    margin-left: var(--gazette-space-4);
+    padding-left: var(--gazette-space-6);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 20px;
+    gap: var(--gazette-space-5);
 }
 
 .gazette-cover h1 {
@@ -266,7 +253,7 @@ html:has(.family-gazette) {
 
 .gazette-cover-invitation p {
     max-width: 25ch;
-    font-size: clamp(18px, 1.65vw, 21px);
+    font-size: var(--gazette-text-deck);
     line-height: 1.45;
     margin-bottom: 14px;
 }
@@ -275,7 +262,7 @@ html:has(.family-gazette) {
     display: inline-block;
     color: var(--gazette-accent);
     font-family: var(--gazette-display);
-    font-size: 15px;
+    font-size: var(--gazette-text-action);
     font-weight: 900;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -291,36 +278,48 @@ html:has(.family-gazette) {
 }
 
 .gazette-chapter {
-    padding-block: 42px;
-    border-bottom: 4px double var(--gazette-ink);
-    scroll-margin-top: 12px;
+    padding-block: var(--gazette-space-10);
+    border-bottom: var(--gazette-rule-double);
+    scroll-margin-top: var(--gazette-space-3);
 }
 
 .gazette-label {
-    font-size: 10px;
+    font-size: var(--gazette-text-label);
     font-weight: 700;
-    letter-spacing: 0.23em;
+    letter-spacing: var(--gazette-tracking-label);
     text-transform: uppercase;
     line-height: 1.5;
 }
 
-.family-gazette h2 {
+.family-gazette h2,
+.gazette-heading {
     font-family: var(--gazette-slab);
-    font-size: clamp(32px, 3.7vw, 48px);
-    line-height: 1.12;
-    letter-spacing: -0.045em;
+    font-size: var(--gazette-text-heading);
+    line-height: var(--gazette-leading-heading);
+    letter-spacing: var(--gazette-tracking-heading);
     text-wrap: balance;
 }
 
 .gazette-rich-text {
-    font-size: 17px;
-    line-height: 1.7;
-    max-width: 52ch;
+    font-size: var(--gazette-text-body);
+    line-height: var(--gazette-leading-body);
+    max-width: var(--gazette-prose);
     text-wrap: pretty;
 }
 
 .gazette-rich-text p + p {
     margin-top: 18px;
+}
+
+.gazette-rich-text ul,
+.gazette-rich-text ol {
+    list-style: revert;
+    padding-left: var(--gazette-space-6);
+    margin-block: var(--gazette-space-4);
+}
+
+.gazette-rich-text a {
+    text-decoration: underline;
 }
 
 .gazette-contents {
@@ -329,8 +328,8 @@ html:has(.family-gazette) {
     align-items: center;
     gap: 2px 24px;
     padding-block: 22px;
-    border-bottom: 1px solid var(--gazette-rule);
-    font-size: 13px;
+    border-bottom: var(--gazette-rule-thin);
+    font-size: var(--gazette-text-small);
     color: var(--gazette-muted);
 }
 
@@ -355,12 +354,12 @@ html:has(.family-gazette) {
     grid-template-columns: minmax(0, 0.6fr) minmax(0, 2fr) minmax(0, 0.8fr);
     align-items: end;
     gap: var(--gazette-gap);
-    margin-bottom: 32px;
+    margin-bottom: var(--gazette-space-8);
 }
 
 .gazette-margin-note {
     font-style: italic;
-    font-size: 17px;
+    font-size: var(--gazette-text-body);
     color: var(--gazette-muted);
     text-align: right;
     line-height: 1.5;
@@ -401,8 +400,8 @@ html:has(.family-gazette) {
     margin-block: 20px 24px;
 }
 
-#gazette-year h2 {
-    font-size: clamp(38px, 4.7vw, 62px);
+.gazette-chapter-featured h2 {
+    font-size: var(--gazette-text-feature);
 }
 
 .gazette-single-copy .gazette-margin-note {
@@ -415,9 +414,9 @@ html:has(.family-gazette) {
 
 .gazette-postscript {
     font-family: var(--gazette-display);
-    font-size: 30px;
+    font-size: var(--gazette-text-note);
     line-height: 1.2;
-    border-top: 1px solid var(--gazette-rule);
+    border-top: var(--gazette-rule-thin);
     padding-top: 22px;
     margin-top: 28px !important;
 }
@@ -469,8 +468,8 @@ html:has(.family-gazette) {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
     gap: clamp(32px, 7vw, 88px);
-    padding-block: 64px;
-    border-bottom: 4px double var(--gazette-ink);
+    padding-block: var(--gazette-space-16);
+    border-bottom: var(--gazette-rule-double);
     scroll-margin-top: 16px;
 }
 
@@ -478,7 +477,7 @@ html:has(.family-gazette) {
     margin-block: 22px 32px;
     font-family: var(--gazette-display);
     font-weight: 900;
-    font-size: clamp(44px, 5vw, 68px);
+    font-size: var(--gazette-text-letter);
     line-height: 1.05;
 }
 
@@ -507,7 +506,7 @@ html:has(.family-gazette) {
 }
 
 .gazette-footer {
-    padding-block: 24px;
+    padding-block: var(--gazette-space-6);
 }
 
 .gazette-footer-line {
@@ -515,15 +514,15 @@ html:has(.family-gazette) {
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 16px;
-    font-size: 13px;
+    font-size: var(--gazette-text-small);
 }
 
 .gazette-credits {
-    border-top: 1px solid var(--gazette-rule);
-    margin-top: 24px;
+    border-top: var(--gazette-rule-thin);
+    margin-top: var(--gazette-space-6);
     padding-top: 18px;
     color: var(--gazette-muted);
-    font-size: 12px;
+    font-size: var(--gazette-text-caption);
 }
 
 .gazette-credits summary {
@@ -770,4 +769,61 @@ html:has(.family-gazette) {
     .gazette-topline a {
         letter-spacing: 0;
     }
+}
+
+.gazette-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+.gazette-heading {
+    margin: 0;
+    font-weight: 400;
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.gazette-rule {
+    border: 0;
+    border-top: var(--gazette-rule-thin);
+    margin-block: var(--gazette-space-6);
+}
+
+.gazette-rule-ink {
+    border-top: var(--gazette-rule-ink);
+}
+
+.gazette-rule-double {
+    border-top: var(--gazette-rule-double);
+}
+
+.gazette-button {
+    min-height: 44px;
+    padding: var(--gazette-space-2) var(--gazette-space-5);
+    border: 1px solid var(--gazette-ink);
+    border-radius: 0;
+    background: var(--gazette-ink);
+    color: var(--gazette-paper);
+    font: 700 var(--gazette-text-action) / 1.4 var(--gazette-body);
+    cursor: pointer;
+}
+
+.gazette-button:hover:not(:disabled) {
+    background: var(--gazette-accent);
+    border-color: var(--gazette-accent);
+}
+
+.gazette-button:active:not(:disabled) {
+    opacity: 0.8;
+}
+
+.gazette-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.gazette-button[aria-busy='true'] {
+    cursor: progress;
 }

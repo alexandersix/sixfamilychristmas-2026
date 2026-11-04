@@ -1,6 +1,17 @@
 import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
-import '../../css/option-2.css';
+import {
+    Chapter,
+    Contents,
+    Cover,
+    Disclosure,
+    Footer,
+    GazettePage,
+    Letter,
+    Masthead,
+    Signature,
+} from '@/components/gazette';
+import type { ChapterProps, PhotographProps } from '@/components/gazette';
 
 const photographs = {
     cover: {
@@ -524,279 +535,156 @@ const events: FamilyEvent[] = [
     },
 ];
 
-function Photograph({
+function photoProps({
     name,
     caption,
-    priority = false,
 }: {
     name: PhotographName;
     caption?: string;
-    priority?: boolean;
-}) {
-    return (
-        <figure className={`gazette-photograph gazette-photo-${name}`}>
-            <img
-                src={`/images/option-2/${name}-1920.webp`}
-                srcSet={`/images/option-2/${name}-960.webp 960w, /images/option-2/${name}-1920.webp 1920w`}
-                sizes="(max-width: 680px) 92vw, (max-width: 1100px) 55vw, 650px"
-                alt={photographs[name].alt}
-                loading={priority ? 'eager' : 'lazy'}
-                fetchPriority={priority ? 'high' : 'auto'}
-            />
-            {caption && <figcaption>{caption}</figcaption>}
-        </figure>
-    );
-}
-
-function EventSection({
-    event,
-    number,
-}: {
-    event: FamilyEvent;
-    number: number;
-}) {
-    const heading = (
-        <div className="gazette-section-heading">
-            <p className="gazette-label">
-                Chapter {String(number).padStart(2, '0')}
-            </p>
-            <h2 id={`${event.id}-title`}>{event.title}</h2>
-            <p className="gazette-margin-note">{event.note}</p>
-        </div>
-    );
-    const body = <div className="gazette-rich-text">{event.body}</div>;
-    const photos = event.photos.map((photo) => (
-        <Photograph key={photo.name} {...photo} />
-    ));
-
-    return (
-        <section
-            className={`gazette-chapter gazette-event-${photos.length}`}
-            id={event.id}
-            aria-labelledby={`${event.id}-title`}
-        >
-            {photos.length === 1 ? (
-                <div className="gazette-single-layout">
-                    <div className="gazette-single-copy">
-                        {heading}
-                        {body}
-                        <p className="gazette-postscript">{event.note}</p>
-                    </div>
-                    {photos}
-                </div>
-            ) : (
-                <>
-                    {heading}
-                    {photos.length === 2 && (
-                        <div className="gazette-pair-layout">
-                            {photos[0]}
-                            <div className="gazette-pair-aside">
-                                {photos[1]}
-                                {body}
-                            </div>
-                        </div>
-                    )}
-                    {photos.length === 3 && (
-                        <div className="gazette-trio-layout">
-                            {photos[0]}
-                            <div className="gazette-trio-aside">
-                                {body}
-                                <div className="gazette-photo-pair">
-                                    {photos.slice(1)}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    {photos.length === 4 && (
-                        <div className="gazette-four-layout">
-                            {body}
-                            <div className="gazette-photo-quartet">
-                                {photos}
-                            </div>
-                        </div>
-                    )}
-                </>
-            )}
-        </section>
-    );
+}): PhotographProps {
+    return {
+        src: `/images/option-2/${name}-1920.webp`,
+        srcSet: `/images/option-2/${name}-960.webp 960w, /images/option-2/${name}-1920.webp 1920w`,
+        sizes: '(max-width: 680px) 92vw, (max-width: 1100px) 55vw, 650px',
+        alt: photographs[name].alt,
+        figureClassName: `gazette-photo-${name}`,
+        caption,
+    };
 }
 
 export default function OptionTwo() {
     return (
-        <div className="family-gazette" id="gazette-top">
+        <GazettePage
+            skipTo="#gazette-year"
+            skipLabel="Skip to our year"
+            header={
+                <Masthead
+                    name="The Six Family"
+                    year="2026"
+                    left={{ href: '#gazette-year', label: 'Our year' }}
+                    right={{ href: '#gazette-note', label: 'A note from us' }}
+                    motto="People. Places. Ordinary days. Extraordinary meaning."
+                    edition="A year in review"
+                />
+            }
+            footer={
+                <Footer
+                    back={{
+                        href: '#gazette-top',
+                        label: 'Back to the beginning',
+                    }}
+                    credits={
+                        <Disclosure summary="About this preview & photograph credits">
+                            <p>
+                                Stories and photographs are placeholders for
+                                your family’s year. Photographs via Wikimedia
+                                Commons, resized and cropped for this edition:
+                            </p>
+                            <ul>
+                                {Object.entries(photographs).map(
+                                    ([name, photograph]) => (
+                                        <li key={name}>
+                                            <a
+                                                href={`https://commons.wikimedia.org/wiki/File:${encodeURIComponent(photograph.source)}`}
+                                            >
+                                                {photograph.author}
+                                            </a>{' '}
+                                            (
+                                            {photograph.license ===
+                                            'Public domain' ? (
+                                                'Public domain'
+                                            ) : (
+                                                <a
+                                                    href={
+                                                        photograph.license ===
+                                                        'CC0'
+                                                            ? 'https://creativecommons.org/publicdomain/zero/1.0/'
+                                                            : `https://creativecommons.org/licenses/${photograph.license}/`
+                                                    }
+                                                >
+                                                    {photograph.license ===
+                                                    'CC0'
+                                                        ? 'CC0'
+                                                        : `CC ${photograph.license.startsWith('by-sa') ? 'BY-SA' : 'BY'} ${photograph.license.split('/')[1]}`}
+                                                </a>
+                                            )}
+                                            )
+                                        </li>
+                                    ),
+                                )}
+                            </ul>
+                        </Disclosure>
+                    }
+                >
+                    From our home to yours. Merry Christmas.
+                </Footer>
+            }
+        >
             <Head title="The Six Family | A Year in Review, 2026">
                 <meta
                     name="description"
                     content="The moments, big and small, that made our 2026. A Christmas letter from the Six family."
                 />
             </Head>
-            <a className="gazette-skip" href="#gazette-year">
-                Skip to our year
-            </a>
-
-            <div className="gazette-paper">
-                <header className="gazette-masthead">
-                    <nav
-                        className="gazette-topline"
-                        aria-label="Main navigation"
-                    >
-                        <a href="#gazette-year">Our year</a>
-                        <span className="gazette-date">2026</span>
-                        <a href="#gazette-note">A note from us</a>
-                    </nav>
-                    <div className="gazette-name">
-                        <span>The Six Family</span>
-                    </div>
-                    <div className="gazette-running-line">
-                        <p>
-                            People. Places. Ordinary days. Extraordinary
-                            meaning.
-                        </p>
-                        <p>A year in review</p>
-                    </div>
-                </header>
-
-                <main>
-                    <section
-                        className="gazette-cover"
-                        aria-labelledby="gazette-cover-title"
-                    >
-                        <Photograph name="cover" priority />
-                        <div className="gazette-cover-copy">
-                            <h1 id="gazette-cover-title">
-                                <span>A year to</span>
-                                <span>hold on to</span>
-                            </h1>
-                            <div className="gazette-cover-invitation">
-                                <p>
-                                    The moments, big and small, that made our
-                                    2026.
-                                </p>
-                                <a
-                                    className="gazette-link"
-                                    href="#gazette-year"
-                                >
-                                    Open our year
-                                </a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <nav
-                        className="gazette-contents"
-                        aria-label="Chapters in our year"
-                    >
-                        <p>In this edition</p>
-                        {events.map((event, index) => (
-                            <a key={event.id} href={`#${event.id}`}>
-                                {String(index + 1).padStart(2, '0')}{' '}
-                                <span>{event.indexTitle}</span>
-                            </a>
-                        ))}
-                    </nav>
-
-                    {events.map((event, index) => (
-                        <EventSection
-                            key={event.id}
-                            event={event}
-                            number={index + 1}
-                        />
-                    ))}
-
-                    <section
-                        className="gazette-letter"
-                        id="gazette-note"
-                        aria-labelledby="gazette-note-title"
-                    >
-                        <div className="gazette-letter-heading">
-                            <p className="gazette-label">The last word</p>
-                            <h2 id="gazette-note-title">
-                                A note from
-                                <br />
-                                the family
-                            </h2>
-                            <span
-                                className="gazette-letter-year"
-                                aria-hidden="true"
-                            >
-                                2026
-                            </span>
-                        </div>
-                        <div className="gazette-letter-body">
-                            <p className="gazette-salutation">
-                                Dear friends and family,
-                            </p>
-                            <div className="gazette-rich-text">
-                                <p>
-                                    What a gift to look back on another year
-                                    together. For all the places we went, it’s
-                                    the people who made it feel full. That
-                                    includes you.
-                                </p>
-                                <p>
-                                    Thank you for being part of our lives,
-                                    whether you’re down the road or far away.
-                                    Wishing you a peaceful Christmas and a new
-                                    year full of good things.
-                                </p>
-                            </div>
-                            <p className="gazette-signature">
-                                With love,
-                                <br />
-                                <span>The Six Family</span>
-                            </p>
-                        </div>
-                    </section>
-                </main>
-
-                <footer className="gazette-footer">
-                    <div className="gazette-footer-line">
-                        <p>From our home to yours. Merry Christmas.</p>
-                        <a href="#gazette-top">Back to the beginning</a>
-                    </div>
-                    <details className="gazette-credits">
-                        <summary>
-                            About this preview &amp; photograph credits
-                        </summary>
-                        <p>
-                            Stories and photographs are placeholders for your
-                            family’s year. Photographs via Wikimedia Commons,
-                            resized and cropped for this edition:
-                        </p>
-                        <ul>
-                            {Object.entries(photographs).map(
-                                ([name, photograph]) => (
-                                    <li key={name}>
-                                        <a
-                                            href={`https://commons.wikimedia.org/wiki/File:${encodeURIComponent(photograph.source)}`}
-                                        >
-                                            {photograph.author}
-                                        </a>{' '}
-                                        (
-                                        {photograph.license ===
-                                        'Public domain' ? (
-                                            'Public domain'
-                                        ) : (
-                                            <a
-                                                href={
-                                                    photograph.license === 'CC0'
-                                                        ? 'https://creativecommons.org/publicdomain/zero/1.0/'
-                                                        : `https://creativecommons.org/licenses/${photograph.license}/`
-                                                }
-                                            >
-                                                {photograph.license === 'CC0'
-                                                    ? 'CC0'
-                                                    : `CC ${photograph.license.startsWith('by-sa') ? 'BY-SA' : 'BY'} ${photograph.license.split('/')[1]}`}
-                                            </a>
-                                        )}
-                                        )
-                                    </li>
-                                ),
-                            )}
-                        </ul>
-                    </details>
-                </footer>
-            </div>
-        </div>
+            <Cover
+                id="gazette-cover-title"
+                title={
+                    <>
+                        <span>A year to</span>
+                        <span>hold on to</span>
+                    </>
+                }
+                photograph={photoProps({ name: 'cover' })}
+                action={{ href: '#gazette-year', label: 'Open our year' }}
+            >
+                The moments, big and small, that made our 2026.
+            </Cover>
+            <Contents
+                items={events.map((event) => ({
+                    href: `#${event.id}`,
+                    label: event.indexTitle,
+                }))}
+            />
+            {events.map((event, index) => (
+                <Chapter
+                    key={event.id}
+                    id={event.id}
+                    number={index + 1}
+                    title={event.title}
+                    note={event.note}
+                    featured={index === 0}
+                    photos={
+                        event.photos.map(photoProps) as ChapterProps['photos']
+                    }
+                >
+                    {event.body}
+                </Chapter>
+            ))}
+            <Letter
+                id="gazette-note"
+                label="The last word"
+                title={
+                    <>
+                        A note from
+                        <br />
+                        the family
+                    </>
+                }
+                year="2026"
+                salutation="Dear friends and family,"
+                signature={<Signature name="The Six Family" />}
+            >
+                <p>
+                    What a gift to look back on another year together. For all
+                    the places we went, it’s the people who made it feel full.
+                    That includes you.
+                </p>
+                <p>
+                    Thank you for being part of our lives, whether you’re down
+                    the road or far away. Wishing you a peaceful Christmas and a
+                    new year full of good things.
+                </p>
+            </Letter>
+        </GazettePage>
     );
 }
