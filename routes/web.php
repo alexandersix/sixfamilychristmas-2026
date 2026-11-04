@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\IssueController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -7,3 +8,7 @@ Route::inertia('/option-1', 'option-1')->name('option-1');
 Route::inertia('/option-2', 'option-2')->name('option-2');
 Route::inertia('/styleguide', 'styleguide')->name('styleguide');
 Route::inertia('/components', 'components')->name('components');
+
+Route::get('/issues/{issue:slug}', [IssueController::class, 'show'])->name('issues.show');
+Route::get('/issues/{issue:slug}/preview', [IssueController::class, 'preview'])
+    ->middleware('auth')->name('issues.preview');

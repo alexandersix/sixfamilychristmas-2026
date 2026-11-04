@@ -39,6 +39,7 @@ test('any user can log in and access the admin panel outside local development',
 });
 
 test('development seeding is repeatable and preserves existing credentials', function () {
+    Storage::fake('s3');
     app()->detectEnvironment(fn () => 'local');
     $this->seed();
 
@@ -57,4 +58,6 @@ test('the development account is not seeded in production', function () {
     $this->seed();
 
     $this->assertDatabaseCount('users', 0);
+    $this->assertDatabaseCount('issues', 0);
+    $this->assertDatabaseCount('events', 0);
 });

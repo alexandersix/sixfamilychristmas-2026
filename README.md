@@ -1,8 +1,8 @@
 # Six Family Christmas 2026
 
 A private family Christmas card, built with Laravel 13, Inertia 3, and React 19.
-The admin panel uses Filament 5. The card, password gate, and event editor are not
-implemented yet.
+The Filament 5 admin manages issues and reusable events. The family password gate
+is not implemented yet; published issues are public.
 
 ## Admin panel
 
@@ -21,6 +21,41 @@ never in production. Do not use these credentials for a deployed environment.
 
 Filament assets are published automatically on `composer install` and updates via
 the `filament:upgrade` Composer hook; no separate admin frontend build is needed.
+
+## Editing an issue
+
+1. Open **Issues → New issue** and enter a name, such as **2026**. Save it to
+   create a draft with a generated address, such as `/issues/2026`.
+2. On the issue's edit page, choose **Create new event** or **Add existing event**.
+   An event has a short contents name, headline, optional introduction, story,
+   and 1–4 photographs with required image descriptions and optional captions.
+3. Use **Reorder** to change the events' reading order. Drag photos or use their
+   arrow buttons to choose which photo leads each story. The existing example
+   page's one-, two-, three-, and four-photo compositions are selected automatically;
+   there is no incompatible layout option to choose accidentally.
+4. Click **Preview** to see the saved issue. Draft previews require an admin login.
+   Turn on **Publish issue** and save only when the issue is ready to be public.
+
+The issue address stays the same after renaming it. Duplicate names receive a
+suffix, such as `/issues/2026-2`. Empty issues are allowed while assembling a draft.
+`/option-2`, `/styleguide`, and `/components` remain unchanged design references;
+database-backed issues render at `/issues/{slug}` using the same chapter components.
+Issue-level cover art, opening letters, and social-sharing metadata are not yet editable.
+
+Events are a shared library: editing an event changes every issue that uses it,
+including published issues. **Remove from issue** only detaches the event.
+Deleting an issue preserves its events. An event can be deleted from the library
+only after removal from every issue. Photos belong to the event; their ordered
+paths, descriptions, and captions are stored together in its `photos` JSON column.
+The `event_issue` join table stores each issue's independent event order and
+prevents adding the same event twice to one issue.
+
+Local `php artisan db:seed` also creates a draft **2026** issue with four sample
+events showing every supported photo count, copying existing credited demo photos
+into private S3 storage. Repeated seeding does not overwrite editorial changes.
+Production seeding creates neither the demo content nor the development account.
+`IssueFactory` and `EventFactory` support tests; factory photo paths are placeholders,
+not uploaded files. Use storage fakes or supply real uploaded paths when rendering them.
 
 ## Hallmark design trial (Amp)
 
@@ -103,7 +138,7 @@ amp orb service restart queue
 Restart the queue worker after changing jobs or their dependencies. It uses the
 database queue, so Redis is not required. Database-backed sessions and cache are
 also available. PHP accepts files up to 32 MiB and request bodies up to 140 MiB;
-Filament/Livewire validation limits will need configuring when the panel is added.
+the event editor and Livewire limit each photo to 12 MiB.
 
 ## Photo storage
 
@@ -121,9 +156,17 @@ without a separate storage portal or cross-origin authentication problems.
 
 Keep photos private and use `Storage::disk('s3')->temporaryUrl(...)` for previews;
 plain unsigned object URLs are denied. Direct browser uploads can use
-`temporaryUploadUrl(...)`. Configure the future Filament upload field for the
-`s3` disk and private visibility. Application authorization must control who can
-request signed URLs. Do not make the bucket public to work around a preview issue.
+`temporaryUploadUrl(...)`. The Filament photo fields use the `s3` disk, private
+visibility, random filenames, and JPEG/PNG/WebP validation. Rich-text stories
+support basic formatting and links; photographs are managed separately.
+Issue responses sanitize story HTML and generate one-hour signed photo URLs only
+after checking publication or preview access. Responses are not cacheable. Signed
+URLs remain usable until they expire, even if an issue is subsequently unpublished.
+Do not make the bucket public to work around a preview issue.
+
+Removing or replacing a photo does not delete its storage object automatically.
+This avoids destructive storage changes while editing shared stories; unused-file
+cleanup and storage backups remain an operational responsibility.
 
 ## Checks
 
