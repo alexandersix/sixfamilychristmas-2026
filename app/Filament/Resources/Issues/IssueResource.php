@@ -51,6 +51,7 @@ class IssueResource extends Resource
                 TextInput::make('password')
                     ->label('Issue password')
                     ->password()
+                    ->live(onBlur: true)
                     ->autocomplete('new-password')
                     ->placeholder(fn (?Issue $record): string => filled($record?->password) ? 'Password is set' : 'No password set')
                     ->afterStateHydrated(fn (TextInput $component) => $component->state(null))
@@ -63,10 +64,20 @@ class IssueResource extends Resource
                             }
                         },
                     ])
-                    ->helperText('Use a strong, unique password (at most 72 bytes). Leave blank to keep the current password. Passwords are stored securely and cannot be displayed. Viewer password protection is not enabled yet.'),
+                    ->helperText('Use a strong, unique password (at most 72 bytes). Leave blank to keep the current password. Passwords are stored securely and cannot be displayed. Readers need this password to open the published issue.'),
                 Toggle::make('is_published')
                     ->label('Publish issue')
-                    ->helperText('Off means draft: only signed-in editors can preview it. On makes it public. There is no family password gate yet.')
+                    ->helperText(function (Get $get, ?Issue $record): string {
+                        $draft = 'Off means draft: only signed-in editors can preview it. ';
+
+                        if (filled($get('password'))) {
+                            return $draft.'After saving, readers will need the new issue password when this issue is published.';
+                        }
+
+                        return $draft.(filled($record?->password)
+                            ? 'When published, readers must enter this issue’s password.'
+                            : 'Readers cannot open this issue until you set a password, even when published.');
+                    })
                     ->default(false),
                 Section::make('Masthead')
                     ->description('The year comes from the issue name. Navigation destinations are set automatically.')

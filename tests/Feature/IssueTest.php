@@ -85,12 +85,44 @@ test('editors set replace and preserve issue passwords without receiving the has
         ->fillForm(['password' => 'replacement-family-password'])
         ->call('save')
         ->assertHasNoFormErrors()
-        ->assertSet('data.password', null);
+        ->assertSet('data.password', null)
+        ->assertSee('When published, readers must enter this issue’s password.');
 
     $newHash = $issue->fresh()->password;
     expect(Hash::check('replacement-family-password', $newHash))->toBeTrue()
         ->and(Hash::check('first-family-password', $newHash))->toBeFalse();
 });
+
+test('publishing guidance follows saved and unsaved issue passwords', function (bool $editing, bool $hasPassword) {
+    $this->actingAs(User::factory()->create());
+    $issue = $editing ? Issue::factory()->create([
+        'password' => $hasPassword ? 'existing-family-password' : null,
+    ]) : null;
+
+    $form = $issue
+        ? Livewire::test(EditIssue::class, ['record' => $issue->id])
+        : Livewire::test(CreateIssue::class);
+
+    $savedGuidance = $hasPassword
+        ? 'When published, readers must enter this issue’s password.'
+        : 'Readers cannot open this issue until you set a password, even when published.';
+    $pendingGuidance = 'After saving, readers will need the new issue password when this issue is published.';
+
+    $form->assertSee($savedGuidance)
+        ->assertDontSee($pendingGuidance)
+        ->assertDontSee('There is no family password gate yet.')
+        ->assertDontSee('Viewer password protection is not enabled yet.')
+        ->fillForm(['password' => 'replacement-family-password'])
+        ->assertSee($pendingGuidance)
+        ->assertDontSee($savedGuidance)
+        ->fillForm(['password' => ''])
+        ->assertSee($savedGuidance)
+        ->assertDontSee($pendingGuidance);
+})->with([
+    'new issue' => [false, false],
+    'existing issue without a password' => [true, false],
+    'existing password retained when the field is cleared' => [true, true],
+]);
 
 test('issue passwords follow the account policy and bcrypt byte maximum', function (string $password, bool $valid, string $environment = 'testing') {
     app()->instance('env', $environment);
