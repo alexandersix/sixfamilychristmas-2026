@@ -32,6 +32,9 @@ yarn-error.log
 /.agents/*
 !/.agents/setup
 !/.agents/nginx.conf
+!/.agents/skills/
+/.agents/skills/*
+!/.agents/skills/designing-with-hallmark/
 /.amp/*
 !/.amp/services.yaml
 /.claude

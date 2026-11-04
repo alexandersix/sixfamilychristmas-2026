@@ -22,6 +22,44 @@ never in production. Do not use these credentials for a deployed environment.
 Filament assets are published automatically on `composer install` and updates via
 the `filament:upgrade` Composer hook; no separate admin frontend build is needed.
 
+## Hallmark design trial (Amp)
+
+Hallmark is installed only for this project in
+`.agents/skills/designing-with-hallmark/`. Amp discovers its `SKILL.md` directly;
+no Claude Code plugin, hook, global install, or application dependency is needed
+for the design instructions and static checks.
+
+Ask Amp to **"Use Hallmark to design the Christmas card"** or
+**"Use Hallmark to audit resources/js/pages/welcome.tsx without changing it"**.
+Upstream `/hallmark` examples are not Amp slash commands. Hallmark can guide new
+designs, but only applies to an existing design when explicitly requested.
+
+The vendored copy is Hallmark 2.0.0 from
+[Nutlope/hallmark](https://github.com/Nutlope/hallmark/tree/52328cb3129135499e4e178d4864ee90029dea2b/skills/hallmark)
+at revision `52328cb3129135499e4e178d4864ee90029dea2b`, with its MIT license,
+scripts, references, and theme pictures preserved. Local changes are the skill
+name/frontmatter and the "Amp project trial" instructions in `SKILL.md`.
+There are no automatic updates.
+
+The static linter runs with Node 18 or later:
+
+```sh
+node .agents/skills/designing-with-hallmark/scripts/sloplint.mjs resources/js --scope app
+```
+
+Hallmark's own browser checks additionally require `puppeteer-core` (or
+`puppeteer`) and Chrome. These are not added to the app's dependencies for this
+trial. Set `HALLMARK_PUPPETEER` to a directory from which that package resolves
+and `CHROME_PATH` if Chrome is outside the standard locations. With the app
+running, pass `--render --url <dev-server-route>` to sloplint. Without these
+prerequisites, only static checks run; that is not a browser-check pass.
+Together image generation is optional and is not configured by this install.
+
+To remove the trial, delete `.agents/skills/designing-with-hallmark/`, remove its
+three `.gitignore` exception lines, the two Hallmark ignore patterns in
+`vite.config.ts`, and this section, then reload Amp's skills (or start a new
+thread). No application changes need undoing.
+
 ## Orb development environment
 
 New orbs run the executable `.agents/setup` hook. It installs:

@@ -41,6 +41,7 @@ export default defineConfig({
     },
     lint: {
         ignorePatterns: [
+            '.agents/skills/designing-with-hallmark/**',
             'vendor/**',
             'node_modules/**',
             'public/**',
@@ -64,6 +65,7 @@ export default defineConfig({
         singleAttributePerLine: false,
         htmlWhitespaceSensitivity: 'css',
         ignorePatterns: [
+            '.agents/skills/designing-with-hallmark/**',
             '.github/**',
             'composer.json',
             'resources/js/components/ui/*',
