@@ -102,12 +102,13 @@
 .fi-sidebar-item-btn {
     min-height: 44px;
     border-bottom: var(--gazette-rule-thin);
+    border-inline-start: 3px solid transparent;
     border-radius: 0;
 }
 
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
     background: var(--gazette-edge);
-    border-inline-start: 3px solid var(--gazette-accent);
+    border-inline-start-color: var(--gazette-accent);
 }
 
 .fi-sidebar-item-btn:hover {
