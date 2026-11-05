@@ -26,7 +26,7 @@ beforeEach(function () {
 });
 
 test('editors create issues with unique permanent addresses and publish them', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(CreateIssue::class)
         ->fillForm(['name' => 'Christmas 2026'])
@@ -61,7 +61,7 @@ test('issue passwords use Laravel hashing and are hidden from serialization', fu
 });
 
 test('editors set replace and preserve issue passwords without receiving the hash', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(CreateIssue::class)
         ->fillForm(['name' => '2026', 'password' => 'first-family-password'])
@@ -94,7 +94,7 @@ test('editors set replace and preserve issue passwords without receiving the has
 });
 
 test('publishing guidance follows saved and unsaved issue passwords', function (bool $editing, bool $hasPassword) {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
     $issue = $editing ? Issue::factory()->create([
         'password' => $hasPassword ? 'existing-family-password' : null,
     ]) : null;
@@ -126,7 +126,7 @@ test('publishing guidance follows saved and unsaved issue passwords', function (
 
 test('issue passwords follow the account policy and bcrypt byte maximum', function (string $password, bool $valid, string $environment = 'testing') {
     app()->instance('env', $environment);
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
     $form = Livewire::test(CreateIssue::class)
         ->set('data.name', '2026')
         ->set('data.password', $password)
@@ -149,7 +149,7 @@ test('issue passwords follow the account policy and bcrypt byte maximum', functi
 ]);
 
 test('editors upload photos and create an event directly inside an issue', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
     $issue = Issue::factory()->create();
 
     Livewire::test(EventsRelationManager::class, [
@@ -190,7 +190,7 @@ test('editors upload photos and create an event directly inside an issue', funct
 });
 
 test('editors reuse reorder and remove events without changing another issue', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
     $issue = Issue::factory()->create();
     $other = Issue::factory()->create();
     [$first, $second, $third] = Event::factory()->count(3)->create()->all();
@@ -227,7 +227,7 @@ test('issue pages hide drafts and return ordered sanitized stories with protecte
     $this->get('/issues/missing')->assertNotFound();
     $this->get('/issues/2026/preview')->assertRedirect('/admin/login');
 
-    $this->actingAs(User::factory()->create())
+    $this->actingAs(User::factory()->admin()->create())
         ->get('/issues/2026/preview')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
@@ -275,7 +275,7 @@ test('event photo counts match the supported compositions', function (int $count
 })->with([0, 1, 2, 3, 4, 5]);
 
 test('the event form rejects missing photos descriptions and non-image uploads', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
     $form = Livewire::test(CreateEvent::class);
     $form->fillForm(['name' => 'Test', 'title' => 'Headline', 'body' => '<p>Story</p>', 'photos' => []])
         ->call('create')->assertHasFormErrors(['photos']);
@@ -285,7 +285,7 @@ test('the event form rejects missing photos descriptions and non-image uploads',
 });
 
 test('editors cannot substitute a photo path belonging to another event', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
     $event = Event::factory()->create();
     Storage::disk('s3')->put($event->photos[0]['path'], 'original');
     Storage::disk('s3')->put('events/someone-else.jpg', 'other photo');
@@ -332,7 +332,7 @@ test('sample issue seeding adds complete issues without changing existing data',
 });
 
 test('editors create and edit issue headers with private cover photographs', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
     $header = [
         'publication_name' => 'The Six Gazette',
         'motto' => 'Small moments. Lasting memories.',
@@ -397,7 +397,7 @@ test('editors create and edit issue headers with private cover photographs', fun
 });
 
 test('the issue header form rejects invalid content and substituted cover paths', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
     $issue = Issue::factory()->create(['cover_photo_path' => 'issues/original.jpg']);
     Storage::disk('s3')->put('issues/original.jpg', 'original');
     Storage::disk('s3')->put('issues/someone-else.jpg', 'other');
@@ -422,7 +422,7 @@ test('the issue header form rejects invalid content and substituted cover paths'
 });
 
 test('editors write edit and hide the optional Last Word without losing the letter', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
     $letter = [
         'show_last_word' => true,
         'last_word_title' => "A little note\nfrom home",

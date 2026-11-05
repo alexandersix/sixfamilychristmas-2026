@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => 'Test User',
                     'password' => 'password',
+                    'is_admin' => true,
                 ],
             );
 

@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->profile(isSimple: false)
             ->brandName('The Six Family Gazette')
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('auto')

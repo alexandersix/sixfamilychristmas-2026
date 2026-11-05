@@ -137,7 +137,7 @@ test('private photographs require current authorization and belong to the reques
 
 test('admin sessions cannot bypass the reader gate but can preview passwordless drafts', function () {
     $issue = Issue::factory()->published()->create();
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->admin()->create());
     $this->get('/issues/'.$issue->slug)->assertForbidden();
     $issue->update(['is_published' => false]);
     $this->get('/issues/'.$issue->slug.'/preview')->assertOk();

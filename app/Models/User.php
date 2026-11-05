@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
+ * @property bool $is_admin
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -32,7 +33,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return (bool) $this->is_admin;
     }
 
     /**
@@ -44,6 +45,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
+            'is_admin' => 'boolean',
             'password' => 'hashed',
         ];
     }
