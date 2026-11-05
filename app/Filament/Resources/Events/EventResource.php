@@ -54,7 +54,7 @@ class EventResource extends Resource
                             ->required(),
                     ])->columnSpanFull(),
                 Section::make('Photographs')
-                    ->description('Add 1–4 photos. The layout automatically fits the number of photos. Drag to reorder; the first photo leads the story.')
+                    ->description('Photos can be added later. Events without photos stay hidden from issue pages and previews. Add up to 4 photos; the first photo leads the story.')
                     ->schema([
                         Repeater::make('photos')
                             ->hiddenLabel()
@@ -74,7 +74,7 @@ class EventResource extends Resource
                                     ->required()->maxLength(255),
                                 TextInput::make('caption')->maxLength(255),
                             ])
-                            ->minItems(1)->maxItems(4)->defaultItems(1)
+                            ->maxItems(4)->defaultItems(0)
                             ->addActionLabel('Add photo')
                             ->reorderableWithButtons()
                             ->itemLabel(fn (array $state): string => $state['alt'] ?? 'New photo'),

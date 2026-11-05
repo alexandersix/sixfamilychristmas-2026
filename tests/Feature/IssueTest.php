@@ -268,7 +268,7 @@ test('issue pages hide drafts and return ordered sanitized stories with protecte
 
 test('event photo counts match the supported compositions', function (int $count) {
     $photo = ['path' => 'events/example.webp', 'alt' => 'A memory'];
-    if ($count === 0 || $count === 5) {
+    if ($count === 5) {
         expect(fn () => Event::factory()->create(['photos' => array_fill(0, $count, $photo)]))
             ->toThrow(ValidationException::class);
     } else {
@@ -277,12 +277,65 @@ test('event photo counts match the supported compositions', function (int $count
     }
 })->with([0, 1, 2, 3, 4, 5]);
 
-test('the event form rejects missing photos descriptions and non-image uploads', function () {
+test('editors create events without photos and add or remove photos later', function () {
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(CreateEvent::class)
+        ->fillForm(['name' => 'Beach week', 'title' => 'Our week away', 'body' => '<p>A story in progress.</p>'])
+        ->call('create')->assertHasNoFormErrors();
+    $event = Event::sole();
+    expect($event->photos)->toBe([]);
+
+    Livewire::test(EditEvent::class, ['record' => $event->id])
+        ->fillForm(['photos' => [['path' => [UploadedFile::fake()->image('beach.jpg')], 'alt' => 'A day at the beach']]])
+        ->call('save')->assertHasNoFormErrors();
+    expect($event->fresh()->photos)->toHaveCount(1);
+
+    Livewire::test(EditEvent::class, ['record' => $event->id])
+        ->fillForm(['photos' => []])
+        ->call('save')->assertHasNoFormErrors();
+    expect($event->fresh()->photos)->toBe([]);
+
+    $issue = Issue::factory()->create();
+    Livewire::test(EventsRelationManager::class, ['ownerRecord' => $issue, 'pageClass' => EditIssue::class])
+        ->callAction(TestAction::make('create')->table(), data: [
+            'name' => 'Winter plans', 'title' => 'Looking ahead', 'body' => '<p>More to come.</p>',
+        ])->assertHasNoFormErrors();
+    expect($issue->events()->sole()->photos)->toBe([]);
+
+    $withoutPhotos = Event::create(['name' => 'Spring', 'title' => 'Spring days', 'body' => '<p>Our plans.</p>']);
+    expect($withoutPhotos->fresh()->photos)->toBe([]);
+});
+
+test('issue pages and previews omit imageless events until photos are added', function () {
+    $issue = Issue::factory()->published()->create(['password' => 'family-event-password']);
+    $pending = Event::factory()->create(['photos' => []]);
+    $ready = Event::factory()->create();
+    $issue->events()->attach($pending, ['position' => 1]);
+    $issue->events()->attach($ready, ['position' => 2]);
+
+    $this->post('/issues/'.$issue->slug.'/login', ['password' => 'family-event-password'])->assertSessionHasNoErrors();
+    $this->get('/issues/'.$issue->slug)->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->has('issue.events', 1)->where('issue.events.0.id', $ready->id));
+    $this->actingAs(User::factory()->admin()->create());
+    $this->get('/issues/'.$issue->slug.'/preview')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->has('issue.events', 1)->where('issue.events.0.id', $ready->id));
+
+    $pending->update(['photos' => $ready->photos]);
+    $this->get('/issues/'.$issue->slug)->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->has('issue.events', 2)->where('issue.events.0.id', $pending->id)->where('issue.events.1.id', $ready->id));
+
+    $pending->update(['photos' => []]);
+    $ready->update(['photos' => []]);
+    $this->get('/issues/'.$issue->slug)->assertOk()->assertInertia(fn (Assert $page) => $page->has('issue.events', 0));
+});
+
+test('the event form rejects incomplete photos and non-image uploads', function () {
     $this->actingAs(User::factory()->admin()->create());
     $form = Livewire::test(CreateEvent::class);
-    $form->fillForm(['name' => 'Test', 'title' => 'Headline', 'body' => '<p>Story</p>', 'photos' => []])
-        ->call('create')->assertHasFormErrors(['photos']);
-    $form->fillForm(['photos' => [['path' => [UploadedFile::fake()->create('document.pdf', 5, 'application/pdf')], 'alt' => '']]])
+    $form->fillForm(['name' => 'Test', 'title' => 'Headline', 'body' => '<p>Story</p>', 'photos' => [['path' => [], 'alt' => '']]])
+        ->call('create')->assertHasFormErrors(['photos.0.path', 'photos.0.alt'])
+        ->fillForm(['photos' => [['path' => [UploadedFile::fake()->create('document.pdf', 5, 'application/pdf')], 'alt' => '']]])
         ->call('create')->assertHasFormErrors(['photos.0.path', 'photos.0.alt']);
     expect(Event::count())->toBe(0);
 });

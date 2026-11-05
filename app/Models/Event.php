@@ -25,6 +25,8 @@ class Event extends Model
     /** @use HasFactory<EventFactory> */
     use HasFactory;
 
+    protected $attributes = ['photos' => '[]'];
+
     protected static function booted(): void
     {
         static::saving(function (Event $event): void {
@@ -33,7 +35,7 @@ class Event extends Model
                 'title' => ['required', 'string', 'max:255'],
                 'note' => ['nullable', 'string', 'max:255'],
                 'body' => ['required', 'string'],
-                'photos' => ['required', 'array', 'min:1', 'max:4'],
+                'photos' => ['present', 'array', 'max:4'],
                 'photos.*.path' => ['required', 'string', 'starts_with:events/', 'not_regex:/\.\./'],
                 'photos.*.alt' => ['required', 'string', 'max:255'],
                 'photos.*.caption' => ['nullable', 'string', 'max:255'],

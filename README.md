@@ -28,7 +28,9 @@ the `filament:upgrade` Composer hook; no separate admin frontend build is needed
    create a draft with a generated address, such as `/issues/2026`.
 2. On the issue's edit page, choose **Create new event** or **Add existing event**.
    An event has a short contents name, headline, optional introduction, story,
-   and 1–4 photographs with required image descriptions and optional captions.
+   and up to 4 photographs with required image descriptions and optional captions.
+   Photos can be added later. Events without photos remain editable in the admin
+   but are hidden from issue pages and previews until at least one photo is added.
 3. Use **Reorder** to change the events' reading order. Drag photos or use their
    arrow buttons to choose which photo leads each story. One-, two-, three-,
    and four-photo layouts are selected automatically;

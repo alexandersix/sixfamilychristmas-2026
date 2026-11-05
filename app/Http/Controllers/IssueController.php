@@ -69,7 +69,7 @@ class IssueController extends Controller
                     'sign_off' => $issue->last_word_sign_off,
                     'signature' => $issue->last_word_signature ?: $issue->publication_name,
                 ] : null,
-                'events' => $issue->events->map(fn (Event $event): array => [
+                'events' => $issue->events->filter(fn (Event $event): bool => count($event->photos) > 0)->values()->map(fn (Event $event): array => [
                     'id' => $event->id,
                     'name' => $event->name,
                     'title' => $event->title,
