@@ -141,11 +141,14 @@ test('issue passwords follow the account policy and bcrypt byte maximum', functi
     }
 })->with([
     'too short' => ['1234567', false],
-    'minimum length' => ['12345678', true],
+    'eight characters' => ['12345678', false],
+    'minimum length' => ['123456789', true],
     '72 bytes' => [str_repeat('é', 36), true],
     '73 bytes' => [str_repeat('a', 73), false],
     'multibyte overflow' => [str_repeat('é', 37), false],
-    'production policy' => ['12345678', false, 'production'],
+    'production rejects eight characters' => ['12345678', false, 'production'],
+    'production accepts numbers only' => ['123456789', true, 'production'],
+    'production accepts lowercase only' => ['abcdefghi', true, 'production'],
 ]);
 
 test('editors upload photos and create an event directly inside an issue', function () {

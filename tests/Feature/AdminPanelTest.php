@@ -139,6 +139,42 @@ test('admins can edit their own profile and password without changing other acco
         ->and(Hash::check('password', $other->fresh()->password))->toBeTrue();
 });
 
+test('account passwords require only more than eight characters', function (string $environment) {
+    app()->detectEnvironment(fn () => $environment);
+    $user = User::factory()->admin()->create();
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    $page = Livewire::test(CreateUser::class)
+        ->set('data', [
+            'name' => 'New Editor',
+            'email' => 'editor@example.com',
+            'password' => '12345678',
+            'password_confirmation' => '12345678',
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['password']);
+
+    $page->set('data.password', '123456789')
+        ->set('data.password_confirmation', '123456789')
+        ->call('create')->assertHasNoFormErrors();
+
+    expect(Hash::check('123456789', User::where('email', 'editor@example.com')->firstOrFail()->password))->toBeTrue();
+
+    $profile = Livewire::test(EditProfile::class)
+        ->set('data.password', 'abcdefgh')
+        ->set('data.passwordConfirmation', 'abcdefgh')
+        ->set('data.currentPassword', 'password')
+        ->call('save')
+        ->assertHasFormErrors(['password']);
+
+    $profile->set('data.password', 'abcdefghi')
+        ->set('data.passwordConfirmation', 'abcdefghi')
+        ->call('save')->assertHasNoFormErrors();
+
+    expect(Hash::check('abcdefghi', $user->fresh()->password))->toBeTrue();
+})->with(['testing', 'production']);
+
 test('development seeding is repeatable and preserves existing credentials', function () {
     Storage::fake('s3');
     app()->detectEnvironment(fn () => 'local');
