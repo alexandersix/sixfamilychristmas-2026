@@ -90,8 +90,7 @@ class IssueResource extends Resource
                             ->default('People. Places. Ordinary days. Extraordinary meaning.')
                             ->required()->maxLength(255),
                         TextInput::make('edition_description')
-                            ->default('A year in review')->required()->maxLength(255)
-                            ->helperText('Preview mode displays “Editor preview” instead.'),
+                            ->default('A year in review')->required()->maxLength(255),
                         TextInput::make('left_navigation_label')
                             ->default('Our year')->required()->maxLength(255)
                             ->helperText('Links to this issue’s contents.'),

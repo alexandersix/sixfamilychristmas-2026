@@ -68,9 +68,7 @@ export default function IssuePage({
                         label: issue.right_navigation_label,
                     }}
                     motto={issue.motto}
-                    edition={
-                        preview ? 'Editor preview' : issue.edition_description
-                    }
+                    edition={issue.edition_description}
                 />
             }
             footer={
