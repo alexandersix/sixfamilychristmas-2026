@@ -3,13 +3,17 @@
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\IssueLoginController;
 use App\Http\Middleware\AuthorizeIssue;
+use Filament\Http\Middleware\Authenticate;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
-Route::inertia('/option-1', 'option-1')->name('option-1');
-Route::inertia('/option-2', 'option-2')->name('option-2');
-Route::inertia('/styleguide', 'styleguide')->name('styleguide');
-Route::inertia('/components', 'components')->name('components');
+
+Route::middleware(Authenticate::class)->group(function (): void {
+    Route::inertia('/option-1', 'option-1')->name('option-1');
+    Route::inertia('/option-2', 'option-2')->name('option-2');
+    Route::inertia('/styleguide', 'styleguide')->name('styleguide');
+    Route::inertia('/components', 'components')->name('components');
+});
 
 Route::get('/issues/{issue:slug}/login', [IssueLoginController::class, 'show'])->name('issues.login');
 Route::post('/issues/{issue:slug}/login', [IssueLoginController::class, 'store'])->name('issues.login.store');
