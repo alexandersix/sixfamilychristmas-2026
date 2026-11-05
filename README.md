@@ -30,8 +30,8 @@ the `filament:upgrade` Composer hook; no separate admin frontend build is needed
    An event has a short contents name, headline, optional introduction, story,
    and 1–4 photographs with required image descriptions and optional captions.
 3. Use **Reorder** to change the events' reading order. Drag photos or use their
-   arrow buttons to choose which photo leads each story. The existing example
-   page's one-, two-, three-, and four-photo compositions are selected automatically;
+   arrow buttons to choose which photo leads each story. One-, two-, three-,
+   and four-photo layouts are selected automatically;
    there is no incompatible layout option to choose accidentally.
 4. Click **Preview** to see the saved issue. Draft previews require an admin login.
    Set an **Issue password**, then turn on **Publish issue** and save when the

@@ -54,7 +54,7 @@ class EventResource extends Resource
                             ->required(),
                     ])->columnSpanFull(),
                 Section::make('Photographs')
-                    ->description('Add 1–4 photos. The layout automatically fits the number of photos, just like the example page. Drag to reorder; the first photo leads the story.')
+                    ->description('Add 1–4 photos. The layout automatically fits the number of photos. Drag to reorder; the first photo leads the story.')
                     ->schema([
                         Repeater::make('photos')
                             ->hiddenLabel()
