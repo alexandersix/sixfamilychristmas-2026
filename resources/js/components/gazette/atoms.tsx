@@ -80,12 +80,56 @@ export function Image({
     priority = false,
     className,
     alt,
+    focalPoint,
+    style,
+    onLoad,
     ...props
-}: Omit<ComponentProps<'img'>, 'alt'> & { alt: string; priority?: boolean }) {
+}: Omit<ComponentProps<'img'>, 'alt'> & {
+    alt: string;
+    priority?: boolean;
+    focalPoint?: { x: number; y: number };
+}) {
+    const ref = useRef<HTMLImageElement>(null);
+
+    useLayoutEffect(() => {
+        const image = ref.current;
+        if (!image || !focalPoint) return;
+
+        const position = () => {
+            if (!image.naturalWidth || !image.naturalHeight) return;
+            const { width, height } = image.getBoundingClientRect();
+            const scale = Math.max(
+                width / image.naturalWidth,
+                height / image.naturalHeight,
+            );
+            const scaledWidth = image.naturalWidth * scale;
+            const scaledHeight = image.naturalHeight * scale;
+            // Center the selected source point, clamping the crop to the image edges.
+            const offset = (size: number, frame: number, focus: number) =>
+                Math.min(
+                    0,
+                    Math.max(frame - size, frame / 2 - (size * focus) / 100),
+                );
+            image.style.objectPosition = `${offset(scaledWidth, width, focalPoint.x)}px ${offset(scaledHeight, height, focalPoint.y)}px`;
+        };
+        const observer = new ResizeObserver(position);
+        observer.observe(image);
+        image.addEventListener('load', position);
+        position();
+
+        return () => {
+            observer.disconnect();
+            image.removeEventListener('load', position);
+        };
+    }, [focalPoint, props.src]);
+
     return (
         <img
+            ref={ref}
             className={cn('gazette-image', className)}
             alt={alt}
+            style={style}
+            onLoad={onLoad}
             loading={priority ? 'eager' : 'lazy'}
             fetchPriority={priority ? 'high' : 'auto'}
             {...props}

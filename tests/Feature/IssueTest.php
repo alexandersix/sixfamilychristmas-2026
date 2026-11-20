@@ -319,6 +319,65 @@ test('event photo counts match the supported compositions', function (int $count
     }
 })->with([0, 1, 2, 3, 4, 5]);
 
+test('editors focus existing photographs without replacing private originals', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $issue = Issue::factory()->create(['cover_photo_path' => 'issues/existing.jpg']);
+    $event = Event::factory()->create();
+    $issue->events()->attach($event);
+    $original = $event->photos[0];
+    Storage::disk()->put($original['path'], 'original event bytes');
+    Storage::disk()->put($issue->cover_photo_path, 'original cover bytes');
+
+    $this->get('/issues/'.$issue->slug.'/preview')->assertInertia(fn (Assert $page) => $page
+        ->where('issue.cover_photo.focalPoint', ['x' => 50, 'y' => 50])
+        ->where('issue.events.0.photos.0.focalPoint', ['x' => 50, 'y' => 50]));
+
+    Livewire::test(EditEvent::class, ['record' => $event->id])
+        ->fillForm(['photos' => [[...$original, 'path' => [$original['path']], 'focal_point' => ['x' => 82, 'y' => 23]]]])
+        ->call('save')->assertHasNoFormErrors();
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->fillForm(['cover_focal_point' => ['x' => 12, 'y' => 74]])
+        ->call('save')->assertHasNoFormErrors();
+
+    expect($event->fresh()->photos[0])->toEqual([...$original, 'focal_point' => ['x' => 82, 'y' => 23]])
+        ->and($issue->fresh()->cover_photo_path)->toBe('issues/existing.jpg')
+        ->and(Storage::disk()->get($original['path']))->toBe('original event bytes')
+        ->and(Storage::disk()->get('issues/existing.jpg'))->toBe('original cover bytes')
+        ->and(Storage::disk()->getVisibility($original['path']))->toBe('private');
+
+    $this->get('/issues/'.$issue->slug.'/preview')->assertInertia(fn (Assert $page) => $page
+        ->where('issue.cover_photo.focalPoint', ['x' => 12, 'y' => 74])
+        ->where('issue.events.0.photos.0.focalPoint', ['x' => 82, 'y' => 23])
+        ->missing('issue.events.0.photos.0.path'));
+
+    $photos = [...$event->fresh()->photos, ['path' => 'events/second.jpg', 'alt' => 'Second photo', 'caption' => null, 'focal_point' => ['x' => 0, 'y' => 100]]];
+    $event->update(['photos' => $photos]);
+    Storage::disk()->put('events/second.jpg', 'second original');
+    Livewire::test(EditEvent::class, ['record' => $event->id])
+        ->fillForm(['photos' => array_map(fn (array $photo) => [...$photo, 'path' => [$photo['path']]], array_reverse($photos))])
+        ->call('save')->assertHasNoFormErrors();
+    expect($event->fresh()->photos)->toEqual(array_reverse($photos));
+});
+
+test('photo focus rejects invalid coordinates', function (array $point) {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->create();
+    $photo = $event->photos[0];
+    Storage::disk()->put($photo['path'], 'original');
+    Livewire::test(EditEvent::class, ['record' => $event->id])
+        ->fillForm(['photos' => [[...$photo, 'path' => [$photo['path']], 'focal_point' => $point]]])
+        ->call('save')->assertHasFormErrors(['photos.0.focal_point']);
+    $issue = Issue::factory()->create();
+    Livewire::test(EditIssue::class, ['record' => $issue->id])
+        ->fillForm(['cover_focal_point' => $point])
+        ->call('save')->assertHasFormErrors(['cover_focal_point']);
+})->with([
+    'past left edge' => [['x' => -1, 'y' => 50]],
+    'past bottom edge' => [['x' => 50, 'y' => 101]],
+    'empty axis' => [['x' => 20, 'y' => null]],
+    'non numeric' => [['x' => 'left', 'y' => 50]],
+]);
+
 test('editors create events without photos and add or remove photos later', function () {
     $this->actingAs(User::factory()->admin()->create());
 

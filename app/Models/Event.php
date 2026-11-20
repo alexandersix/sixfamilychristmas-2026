@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Validator;
  * @property string $title
  * @property string|null $note
  * @property string $body
- * @property list<array{path: string, alt: string, caption?: string|null}> $photos
+ * @property list<array{path: string, alt: string, caption?: string|null, focal_point?: array{x: float|int, y: float|int}}> $photos
  * @property-read Collection<int, Issue> $issues
  */
 #[Fillable(['name', 'title', 'note', 'body', 'photos'])]
@@ -39,6 +39,9 @@ class Event extends Model
                 'photos.*.path' => ['required', 'string', 'starts_with:events/', 'not_regex:/\.\./'],
                 'photos.*.alt' => ['required', 'string', 'max:255'],
                 'photos.*.caption' => ['nullable', 'string', 'max:255'],
+                'photos.*.focal_point' => ['sometimes', 'array:x,y'],
+                'photos.*.focal_point.x' => ['required_with:photos.*.focal_point', 'numeric', 'between:0,100'],
+                'photos.*.focal_point.y' => ['required_with:photos.*.focal_point', 'numeric', 'between:0,100'],
             ])->validate();
         });
     }

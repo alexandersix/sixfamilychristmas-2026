@@ -65,6 +65,7 @@ class IssueController extends Controller
                         ? Storage::disk()->temporaryUrl($issue->cover_photo_path, now()->addHour())
                         : route('issues.cover', $issue->slug),
                     'alt' => $issue->cover_photo_alt,
+                    'focalPoint' => $issue->cover_focal_point ?? ['x' => 50, 'y' => 50],
                 ] : null,
                 'cover_photo_alt' => $issue->cover_photo_alt,
                 'cover_headline' => $issue->cover_headline,
@@ -89,6 +90,7 @@ class IssueController extends Controller
                             : route('issues.photos.show', [$issue->slug, $event->id, $index]),
                         'alt' => $photo['alt'],
                         'caption' => $photo['caption'] ?? null,
+                        'focalPoint' => $photo['focal_point'] ?? ['x' => 50, 'y' => 50],
                     ], $event->photos, array_keys($event->photos)),
                 ]),
             ],

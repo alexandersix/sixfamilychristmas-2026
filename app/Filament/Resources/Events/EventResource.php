@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Events;
 
+use App\Filament\Forms\FocalPoint;
 use App\Filament\Resources\Events\Pages\CreateEvent;
 use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Filament\Resources\Events\Pages\ListEvents;
@@ -67,7 +68,9 @@ class EventResource extends Resource
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->maxSize(12288)
                                     ->helperText('JPEG, PNG, or WebP. Up to 12 MB.')
+                                    ->live()
                                     ->required(),
+                                FocalPoint::make('focal_point'),
                                 TextInput::make('alt')
                                     ->label('Image description')
                                     ->helperText('Describe what is pictured for people using screen readers.')

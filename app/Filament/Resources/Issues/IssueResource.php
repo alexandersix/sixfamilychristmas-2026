@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Issues;
 
+use App\Filament\Forms\FocalPoint;
 use App\Filament\Resources\Issues\Pages\CreateIssue;
 use App\Filament\Resources\Issues\Pages\EditIssue;
 use App\Filament\Resources\Issues\Pages\ListIssues;
@@ -111,7 +112,9 @@ class IssueResource extends Resource
                             ->image()
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->maxSize(12288)
+                            ->live()
                             ->helperText('JPEG, PNG, or WebP. Up to 12 MB. Until you upload a photo, the sample lake photograph is shown.'),
+                        FocalPoint::make('cover_focal_point')->imageField('cover_photo_path'),
                         TextInput::make('cover_photo_alt')
                             ->label('Cover image description')
                             ->default('Snow-dusted mountains and evergreen trees reflected in a quiet alpine lake')

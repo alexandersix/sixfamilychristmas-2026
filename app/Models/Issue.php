@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
  * @property string $right_navigation_label
  * @property string|null $cover_photo_path
  * @property string $cover_photo_alt
+ * @property array{x: float|int, y: float|int}|null $cover_focal_point
  * @property string $cover_headline
  * @property string $cover_introduction
  * @property string $cover_link_label
@@ -41,6 +42,7 @@ use Illuminate\Support\Str;
     'publication_name', 'motto', 'edition_description',
     'left_navigation_label', 'right_navigation_label',
     'cover_photo_path', 'cover_photo_alt', 'cover_headline',
+    'cover_focal_point',
     'cover_introduction', 'cover_link_label',
     'show_last_word', 'last_word_title', 'last_word_salutation',
     'last_word_body', 'last_word_sign_off', 'last_word_signature',
@@ -71,6 +73,7 @@ class Issue extends Model
             'is_current' => 'boolean',
             'password' => 'hashed',
             'show_last_word' => 'boolean',
+            'cover_focal_point' => 'array',
         ];
     }
 

@@ -20,7 +20,11 @@ type Issue = {
     edition_description: string;
     left_navigation_label: string;
     right_navigation_label: string;
-    cover_photo: { src: string; alt: string } | null;
+    cover_photo: {
+        src: string;
+        alt: string;
+        focalPoint: { x: number; y: number };
+    } | null;
     cover_photo_alt: string;
     cover_headline: string;
     cover_introduction: string;
