@@ -13,6 +13,14 @@ use Symfony\Component\HttpFoundation\Response;
 
 class IssueController extends Controller
 {
+    public function current(): Response
+    {
+        $issue = Issue::where('is_current', true)->firstOrFail();
+
+        return redirect()->route('issues.entry', $issue->slug)
+            ->header('Cache-Control', 'private, no-store');
+    }
+
     public function show(Issue $issue): Response
     {
         return $this->render($issue, false);

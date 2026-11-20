@@ -79,6 +79,10 @@ class IssueResource extends Resource
                             : 'Readers cannot open this issue until you set a password, even when published.');
                     })
                     ->default(false),
+                Toggle::make('is_current')
+                    ->label('Current issue')
+                    ->helperText('Send visitors from the homepage to this issue. Saving this as current replaces the previous selection. Publishing and password requirements still apply. With no current issue, the homepage returns 404.')
+                    ->default(false),
                 Section::make('Masthead')
                     ->description('The year comes from the issue name. Navigation destinations are set automatically.')
                     ->schema([
@@ -170,6 +174,7 @@ class IssueResource extends Resource
                     ->searchable(),
                 TextColumn::make('events_count')->counts('events')->label('Events'),
                 IconColumn::make('is_published')->label('Published')->boolean(),
+                IconColumn::make('is_current')->label('Current')->boolean(),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([

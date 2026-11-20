@@ -6,7 +6,7 @@ use App\Http\Middleware\AuthorizeIssue;
 use Filament\Http\Middleware\Authenticate;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('home');
+Route::get('/', [IssueController::class, 'current'])->name('home');
 
 Route::middleware(Authenticate::class)->group(function (): void {
     Route::inertia('/option-1', 'option-1')->name('option-1');
@@ -25,3 +25,6 @@ Route::middleware(AuthorizeIssue::class)->group(function (): void {
 });
 Route::get('/issues/{issue:slug}/preview', [IssueController::class, 'preview'])
     ->middleware('auth')->name('issues.preview');
+
+Route::get('/{issue:slug}', [IssueController::class, 'show'])
+    ->middleware(AuthorizeIssue::class)->name('issues.entry');

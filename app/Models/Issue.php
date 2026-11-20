@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
  * @property string $name
  * @property string $slug
  * @property bool $is_published
+ * @property bool $is_current
  * @property string|null $password
  * @property string $publication_name
  * @property string $motto
@@ -36,7 +37,7 @@ use Illuminate\Support\Str;
  * @property-read Collection<int, Event> $events
  */
 #[Fillable([
-    'name', 'is_published', 'password',
+    'name', 'is_published', 'is_current', 'password',
     'publication_name', 'motto', 'edition_description',
     'left_navigation_label', 'right_navigation_label',
     'cover_photo_path', 'cover_photo_alt', 'cover_headline',
@@ -67,9 +68,24 @@ class Issue extends Model
     {
         return [
             'is_published' => 'boolean',
+            'is_current' => 'boolean',
             'password' => 'hashed',
             'show_last_word' => 'boolean',
         ];
+    }
+
+    public function save(array $options = []): bool
+    {
+        if (! $this->is_current || ! $this->isDirty('is_current')) {
+            return parent::save($options);
+        }
+
+        return $this->getConnection()->transaction(function () use ($options): bool {
+            static::where('is_current', true)->whereKeyNot($this->getKey())
+                ->update(['is_current' => false]);
+
+            return parent::save($options);
+        });
     }
 
     /** @return BelongsToMany<Event, $this, IssueEvent> */

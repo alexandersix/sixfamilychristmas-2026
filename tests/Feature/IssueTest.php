@@ -11,6 +11,7 @@ use App\Models\User;
 use Database\Seeders\IssueSeeder;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -59,6 +60,46 @@ test('issue passwords use Laravel hashing and are hidden from serialization', fu
         ->and(Hash::check('incorrect-password', $stored))->toBeFalse()
         ->and($issue->toArray())->not->toHaveKey('password')
         ->and($issue->toJson())->not->toContain($stored);
+});
+
+test('editors can select replace and clear the current issue on create and edit', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $previous = Issue::factory()->create(['is_current' => true]);
+
+    Livewire::test(CreateIssue::class)
+        ->fillForm(['name' => '2026', 'is_current' => true])
+        ->call('create')->assertHasNoFormErrors();
+    $issue = Issue::where('slug', '2026')->firstOrFail();
+    expect($previous->fresh()->is_current)->toBeFalse()
+        ->and($issue->is_current)->toBeTrue();
+    $this->get('/')->assertRedirect('/2026');
+
+    Livewire::test(EditIssue::class, ['record' => $previous->id])
+        ->fillForm(['is_current' => true])->call('save')->assertHasNoFormErrors();
+    expect($issue->fresh()->is_current)->toBeFalse()
+        ->and(Issue::where('is_current', true)->sole()->id)->toBe($previous->id);
+
+    Livewire::test(EditIssue::class, ['record' => $previous->id])
+        ->fillForm(['is_current' => false])->call('save')->assertHasNoFormErrors();
+    $this->get('/')->assertNotFound();
+});
+
+test('the database rejects a second current issue even when model saves are bypassed', function () {
+    Issue::factory()->create(['is_current' => true]);
+    $other = Issue::factory()->create();
+
+    expect(fn () => Issue::whereKey($other->id)->update(['is_current' => true]))
+        ->toThrow(UniqueConstraintViolationException::class);
+});
+
+test('a failed current issue save preserves the previous selection', function () {
+    $previous = Issue::factory()->create(['is_current' => true]);
+    $other = Issue::factory()->create();
+    $other->slug = $previous->slug;
+
+    expect(fn () => $other->update(['is_current' => true]))
+        ->toThrow(UniqueConstraintViolationException::class);
+    expect($previous->fresh()->is_current)->toBeTrue();
 });
 
 test('editors set replace and preserve issue passwords without receiving the hash', function () {
