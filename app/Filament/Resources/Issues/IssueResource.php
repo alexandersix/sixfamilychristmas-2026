@@ -102,7 +102,7 @@ class IssueResource extends Resource
                     ->schema([
                         FileUpload::make('cover_photo_path')
                             ->label('Cover photograph')
-                            ->disk('s3')->directory('issues')->visibility('private')
+                            ->disk(fn (): string => config('filesystems.default'))->directory('issues')->visibility('private')
                             ->preventFilePathTampering(allowFilePathUsing: fn (string $file, ?Issue $record): bool => $file === $record?->cover_photo_path)
                             ->image()
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])

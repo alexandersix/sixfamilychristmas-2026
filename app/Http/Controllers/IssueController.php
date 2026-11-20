@@ -22,7 +22,7 @@ class IssueController extends Controller
     {
         abort_if($issue->cover_photo_path === null, 404);
 
-        return Storage::disk('s3')->response($issue->cover_photo_path);
+        return Storage::disk()->response($issue->cover_photo_path);
     }
 
     public function photo(Issue $issue, int $event, int $photo): Response
@@ -30,7 +30,7 @@ class IssueController extends Controller
         $story = $issue->events()->findOrFail($event);
         abort_unless(isset($story->photos[$photo]), 404);
 
-        return Storage::disk('s3')->response($story->photos[$photo]['path']);
+        return Storage::disk()->response($story->photos[$photo]['path']);
     }
 
     public function preview(Request $request, Issue $issue): Response
@@ -54,7 +54,7 @@ class IssueController extends Controller
                 'right_navigation_label' => $issue->right_navigation_label,
                 'cover_photo' => $issue->cover_photo_path ? [
                     'src' => $preview
-                        ? Storage::disk('s3')->temporaryUrl($issue->cover_photo_path, now()->addHour())
+                        ? Storage::disk()->temporaryUrl($issue->cover_photo_path, now()->addHour())
                         : route('issues.cover', $issue->slug),
                     'alt' => $issue->cover_photo_alt,
                 ] : null,
@@ -77,7 +77,7 @@ class IssueController extends Controller
                     'body' => Str::sanitizeHtml($event->body),
                     'photos' => array_map(fn (array $photo, int $index): array => [
                         'src' => $preview
-                            ? Storage::disk('s3')->temporaryUrl($photo['path'], now()->addHour())
+                            ? Storage::disk()->temporaryUrl($photo['path'], now()->addHour())
                             : route('issues.photos.show', [$issue->slug, $event->id, $index]),
                         'alt' => $photo['alt'],
                         'caption' => $photo['caption'] ?? null,

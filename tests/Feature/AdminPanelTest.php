@@ -176,7 +176,7 @@ test('account passwords require only more than eight characters', function (stri
 })->with(['testing', 'production']);
 
 test('development seeding is repeatable and preserves existing credentials', function () {
-    Storage::fake('s3');
+    Storage::fake();
     app()->detectEnvironment(fn () => 'local');
     $this->seed();
 

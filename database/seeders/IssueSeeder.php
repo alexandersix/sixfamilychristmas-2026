@@ -31,8 +31,8 @@ class IssueSeeder extends Seeder
         $credits = '';
         foreach ($photos as [$name, $alt, $credit, $source]) {
             $path = $photoDirectory.'/'.$name.'.webp';
-            if (! Storage::disk('s3')->put($path, File::get(public_path('images/option-2/'.$name.'-1920.webp')), 'private')) {
-                throw new RuntimeException('Could not store sample photographs. Check the S3 configuration.');
+            if (! Storage::disk()->put($path, File::get(public_path('images/option-2/'.$name.'-1920.webp')), 'private')) {
+                throw new RuntimeException('Could not store sample photographs. Check the filesystem configuration.');
             }
             $storedPhotos[] = ['path' => $path, 'alt' => $alt, 'caption' => 'Photo: '.$credit];
             $credits .= '<li><a href="https://commons.wikimedia.org/wiki/File:'.rawurlencode($source).'">'.$credit.'</a></li>';

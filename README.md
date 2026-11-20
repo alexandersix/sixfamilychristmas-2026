@@ -174,7 +174,10 @@ the event editor and Livewire limit each photo to 12 MiB.
 
 ## Photo storage
 
-Laravel's default filesystem is `s3`, backed by `league/flysystem-aws-s3-v3`.
+Photo uploads, previews, reader responses, and sample seeding use Laravel's
+configured default filesystem disk. Orb setup selects `s3`, backed by
+`league/flysystem-aws-s3-v3`; Laravel Cloud can supply its own default disk, such
+as `private`, without separate `AWS_*` overrides.
 The `.env` file contains the local S3 endpoint, access credentials, region, and
 bucket. SeaweedFS data lives under the ignored `storage/app/seaweedfs` directory.
 PostgreSQL data lives in `/var/lib/postgresql`. Both survive service restarts and
@@ -186,9 +189,9 @@ SeaweedFS without changing the URI or Host, preserving S3 signatures. Browser
 uploads and signed image previews therefore use the same origin as the app,
 without a separate storage portal or cross-origin authentication problems.
 
-Keep photos private and use `Storage::disk('s3')->temporaryUrl(...)` for previews;
+Keep photos private and use `Storage::disk()->temporaryUrl(...)` for previews;
 plain unsigned object URLs are denied. Direct browser uploads can use
-`temporaryUploadUrl(...)`. The Filament photo fields use the `s3` disk, private
+`temporaryUploadUrl(...)`. The Filament photo fields use the default disk, private
 visibility, random filenames, and JPEG/PNG/WebP validation. Rich-text stories
 support basic formatting and links; photographs are managed separately.
 Issue responses sanitize story HTML. Reader photos are streamed through

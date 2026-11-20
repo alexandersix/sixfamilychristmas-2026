@@ -61,7 +61,7 @@ class EventResource extends Resource
                             ->schema([
                                 FileUpload::make('path')
                                     ->label('Photo')
-                                    ->disk('s3')->directory('events')->visibility('private')
+                                    ->disk(fn (): string => config('filesystems.default'))->directory('events')->visibility('private')
                                     ->preventFilePathTampering(allowFilePathUsing: fn (string $file, ?Event $record): bool => in_array($file, array_column($record->photos ?? [], 'path'), true))
                                     ->image()
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])

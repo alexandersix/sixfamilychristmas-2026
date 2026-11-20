@@ -107,7 +107,8 @@ test('changing or removing the password and unpublishing revoke existing access'
 })->with(['replace', 'remove', 'unpublish']);
 
 test('private photographs require current authorization and belong to the requested issue', function () {
-    Storage::fake('s3');
+    config(['filesystems.default' => 'private', 'filesystems.disks.s3.region' => null]);
+    Storage::fake('private');
     $issue = Issue::factory()->published()->create([
         'password' => 'invitation-password', 'cover_photo_path' => 'issues/cover.jpg',
     ]);
@@ -117,9 +118,9 @@ test('private photographs require current authorization and belong to the reques
     ]]);
     $unrelated = Event::factory()->create();
     $issue->events()->attach($event);
-    Storage::disk('s3')->put('issues/cover.jpg', 'cover bytes');
-    Storage::disk('s3')->put('events/first.jpg', 'first photo bytes');
-    Storage::disk('s3')->put('events/second.jpg', 'second photo bytes');
+    Storage::disk()->put('issues/cover.jpg', 'cover bytes');
+    Storage::disk()->put('events/first.jpg', 'first photo bytes');
+    Storage::disk()->put('events/second.jpg', 'second photo bytes');
     $base = '/issues/'.$issue->slug;
     $photo = $base.'/events/'.$event->id.'/photos/1';
 

@@ -19,7 +19,8 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    Storage::fake('s3', ['visibility' => config('filesystems.disks.s3.visibility')])->buildTemporaryUrlsUsing(
+    config(['filesystems.default' => 'private', 'filesystems.disks.s3.region' => null]);
+    Storage::fake('private', ['visibility' => 'private'])->buildTemporaryUrlsUsing(
         fn (string $path, DateTimeInterface $expiration): string => 'https://photos.example.test/'.$path.'?expires='.$expiration->getTimestamp(),
     );
     Filament::setCurrentPanel(Filament::getPanel('admin'));
@@ -174,8 +175,8 @@ test('editors upload photos and create an event directly inside an issue', funct
     expect($event->name)->toBe('Beach week')
         ->and(array_column($event->photos, 'alt'))->toBe(['Walking on the beach', 'Shells in the sand']);
     foreach ($event->photos as $photo) {
-        Storage::disk('s3')->assertExists($photo['path']);
-        expect(Storage::disk('s3')->getVisibility($photo['path']))->toBe('private');
+        Storage::disk()->assertExists($photo['path']);
+        expect(Storage::disk()->getVisibility($photo['path']))->toBe('private');
     }
 
     Livewire::test(EditEvent::class, ['record' => $event->id])
@@ -343,8 +344,8 @@ test('the event form rejects incomplete photos and non-image uploads', function 
 test('editors cannot substitute a photo path belonging to another event', function () {
     $this->actingAs(User::factory()->admin()->create());
     $event = Event::factory()->create();
-    Storage::disk('s3')->put($event->photos[0]['path'], 'original');
-    Storage::disk('s3')->put('events/someone-else.jpg', 'other photo');
+    Storage::disk()->put($event->photos[0]['path'], 'original');
+    Storage::disk()->put('events/someone-else.jpg', 'other photo');
 
     Livewire::test(EditEvent::class, ['record' => $event->id])
         ->fillForm(['photos' => [['path' => ['events/someone-else.jpg'], 'alt' => 'Substituted']]])
@@ -408,8 +409,8 @@ test('editors create and edit issue headers with private cover photographs', fun
 
     $issue = Issue::sole();
     expect($issue->only(array_keys($header)))->toBe($header);
-    Storage::disk('s3')->assertExists($issue->cover_photo_path);
-    expect(Storage::disk('s3')->getVisibility($issue->cover_photo_path))->toBe('private');
+    Storage::disk()->assertExists($issue->cover_photo_path);
+    expect(Storage::disk()->getVisibility($issue->cover_photo_path))->toBe('private');
     $originalPhoto = $issue->cover_photo_path;
 
     Livewire::test(EditIssue::class, ['record' => $issue->id])
@@ -441,7 +442,7 @@ test('editors create and edit issue headers with private cover photographs', fun
         ->fillForm(['cover_photo_path' => [UploadedFile::fake()->image('replacement.png')]])
         ->call('save')->assertHasNoFormErrors();
     expect($issue->fresh()->cover_photo_path)->not->toBe($originalPhoto);
-    Storage::disk('s3')->assertExists($issue->fresh()->cover_photo_path);
+    Storage::disk()->assertExists($issue->fresh()->cover_photo_path);
 
     Livewire::test(EditIssue::class, ['record' => $issue->id])
         ->fillForm(['cover_photo_path' => []])
@@ -455,8 +456,8 @@ test('editors create and edit issue headers with private cover photographs', fun
 test('the issue header form rejects invalid content and substituted cover paths', function () {
     $this->actingAs(User::factory()->admin()->create());
     $issue = Issue::factory()->create(['cover_photo_path' => 'issues/original.jpg']);
-    Storage::disk('s3')->put('issues/original.jpg', 'original');
-    Storage::disk('s3')->put('issues/someone-else.jpg', 'other');
+    Storage::disk()->put('issues/original.jpg', 'original');
+    Storage::disk()->put('issues/someone-else.jpg', 'other');
 
     Livewire::test(EditIssue::class, ['record' => $issue->id])
         ->fillForm(['cover_photo_path' => ['issues/someone-else.jpg']])
