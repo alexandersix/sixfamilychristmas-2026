@@ -15,9 +15,10 @@ In the local development environment, run `php artisan db:seed` to create:
 - Email: `test@example.com`
 - Password: `password`
 
-Orb setup runs this automatically. Repeated seeding preserves existing users and
-their passwords. The development account is only seeded when `APP_ENV=local`,
-never in production. Do not use these credentials for a deployed environment.
+Orb application startup runs this automatically after storage starts. Repeated
+seeding preserves existing users and their passwords. The development account is
+only seeded when `APP_ENV=local`, never in production. Do not use these credentials
+for a deployed environment.
 
 Filament assets are published automatically on `composer install` and updates via
 the `filament:upgrade` Composer hook; no separate admin frontend build is needed.

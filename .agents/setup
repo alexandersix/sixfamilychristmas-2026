@@ -10,9 +10,10 @@ for package in "${packages[@]}"; do
     dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -q 'install ok installed' || missing+=("$package")
 done
 if ((${#missing[@]})); then
+    . /etc/os-release
     sudo install -d /usr/share/keyrings
     curl -fsSL https://packages.sury.org/php/apt.gpg | sudo tee /usr/share/keyrings/sury-php.gpg >/dev/null
-    echo 'deb [signed-by=/usr/share/keyrings/sury-php.gpg] https://packages.sury.org/php/ bookworm main' |
+    echo "deb [signed-by=/usr/share/keyrings/sury-php.gpg] https://packages.sury.org/php/ ${VERSION_CODENAME} main" |
         sudo tee /etc/apt/sources.list.d/sury-php.list >/dev/null
     sudo apt-get update -qq
     sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${missing[@]}"
@@ -97,7 +98,7 @@ unset db_password
 mkdir -p storage/app/seaweedfs storage/app/orb
 chmod 700 storage/app/seaweedfs
 php artisan migrate --force --no-interaction
-php artisan db:seed --no-interaction
+# Sample photos need the storage service; seed when the application starts.
 php artisan storage:link --no-interaction
 
 echo 'Building React assets'

@@ -15,6 +15,7 @@ services:
         command: >-
             php artisan config:clear &&
             php artisan migrate --force --no-interaction &&
+            AWS_ENDPOINT=http://127.0.0.1:8333 php artisan db:seed --no-interaction &&
             exec php artisan serve --host=127.0.0.1 --port="$PORT" --no-reload
         port: 8000
         health: /up
