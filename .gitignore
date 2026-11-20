@@ -37,6 +37,7 @@ yarn-error.log
 !/.agents/skills/designing-with-hallmark/
 /.amp/*
 !/.amp/services.yaml
+!/.amp/settings.json
 /.claude
 /.codex
 /.cursor
@@ -46,7 +47,6 @@ yarn-error.log
 /.kiro
 /.pi
 /.mcp.json
-/AGENTS.md
 /CLAUDE.md
 /boost.json
 /opencode.json
