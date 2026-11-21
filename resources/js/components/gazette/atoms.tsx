@@ -81,6 +81,7 @@ export function Image({
     className,
     alt,
     focalPoint,
+    showEntirePhoto = false,
     style,
     onLoad,
     ...props
@@ -88,12 +89,18 @@ export function Image({
     alt: string;
     priority?: boolean;
     focalPoint?: { x: number; y: number };
+    showEntirePhoto?: boolean;
 }) {
     const ref = useRef<HTMLImageElement>(null);
 
     useLayoutEffect(() => {
         const image = ref.current;
-        if (!image || !focalPoint) return;
+        if (!image) return;
+        if (showEntirePhoto) {
+            image.style.objectPosition = 'center';
+            return;
+        }
+        if (!focalPoint) return;
 
         const position = () => {
             if (!image.naturalWidth || !image.naturalHeight) return;
@@ -121,14 +128,17 @@ export function Image({
             observer.disconnect();
             image.removeEventListener('load', position);
         };
-    }, [focalPoint, props.src]);
+    }, [focalPoint, props.src, showEntirePhoto]);
 
     return (
         <img
             ref={ref}
             className={cn('gazette-image', className)}
             alt={alt}
-            style={style}
+            style={{
+                ...style,
+                ...(showEntirePhoto && { objectFit: 'contain' }),
+            }}
             onLoad={onLoad}
             loading={priority ? 'eager' : 'lazy'}
             fetchPriority={priority ? 'high' : 'auto'}

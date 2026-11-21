@@ -24,6 +24,7 @@ type Issue = {
         src: string;
         alt: string;
         focalPoint: { x: number; y: number };
+        showEntirePhoto: boolean;
     } | null;
     cover_photo_alt: string;
     cover_headline: string;

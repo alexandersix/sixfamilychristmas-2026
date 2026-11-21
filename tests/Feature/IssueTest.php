@@ -330,6 +330,8 @@ test('editors focus existing photographs without replacing private originals', f
 
     $this->get('/issues/'.$issue->slug.'/preview')->assertInertia(fn (Assert $page) => $page
         ->where('issue.cover_photo.focalPoint', ['x' => 50, 'y' => 50])
+        ->where('issue.cover_photo.showEntirePhoto', false)
+        ->where('issue.events.0.photos.0.showEntirePhoto', false)
         ->where('issue.events.0.photos.0.focalPoint', ['x' => 50, 'y' => 50]));
 
     Livewire::test(EditEvent::class, ['record' => $event->id])
@@ -339,7 +341,7 @@ test('editors focus existing photographs without replacing private originals', f
         ->fillForm(['cover_focal_point' => ['x' => 12, 'y' => 74]])
         ->call('save')->assertHasNoFormErrors();
 
-    expect($event->fresh()->photos[0])->toEqual([...$original, 'focal_point' => ['x' => 82, 'y' => 23]])
+    expect($event->fresh()->photos[0])->toEqual([...$original, 'focal_point' => ['x' => 82, 'y' => 23], 'show_entire_photo' => false])
         ->and($issue->fresh()->cover_photo_path)->toBe('issues/existing.jpg')
         ->and(Storage::disk()->get($original['path']))->toBe('original event bytes')
         ->and(Storage::disk()->get('issues/existing.jpg'))->toBe('original cover bytes')
@@ -350,13 +352,43 @@ test('editors focus existing photographs without replacing private originals', f
         ->where('issue.events.0.photos.0.focalPoint', ['x' => 82, 'y' => 23])
         ->missing('issue.events.0.photos.0.path'));
 
-    $photos = [...$event->fresh()->photos, ['path' => 'events/second.jpg', 'alt' => 'Second photo', 'caption' => null, 'focal_point' => ['x' => 0, 'y' => 100]]];
+    $photos = [...$event->fresh()->photos, ['path' => 'events/second.jpg', 'alt' => 'Second photo', 'caption' => null, 'focal_point' => ['x' => 0, 'y' => 100], 'show_entire_photo' => true]];
     $event->update(['photos' => $photos]);
     Storage::disk()->put('events/second.jpg', 'second original');
     Livewire::test(EditEvent::class, ['record' => $event->id])
         ->fillForm(['photos' => array_map(fn (array $photo) => [...$photo, 'path' => [$photo['path']]], array_reverse($photos))])
         ->call('save')->assertHasNoFormErrors();
     expect($event->fresh()->photos)->toEqual(array_reverse($photos));
+
+    foreach ([true, false] as $showEntirePhoto) {
+        $saved = $event->fresh()->photos;
+        $saved[1]['show_entire_photo'] = $showEntirePhoto;
+        Livewire::test(EditEvent::class, ['record' => $event->id])
+            ->fillForm(['photos' => array_map(fn (array $photo) => [...$photo, 'path' => [$photo['path']]], $saved)])
+            ->call('save')->assertHasNoFormErrors();
+        Livewire::test(EditIssue::class, ['record' => $issue->id])
+            ->fillForm(['cover_show_entire_photo' => $showEntirePhoto])
+            ->call('save')->assertHasNoFormErrors();
+
+        expect($event->fresh()->photos)->toEqual($saved)
+            ->and($issue->fresh()->cover_focal_point)->toBe(['x' => 12, 'y' => 74])
+            ->and($issue->fresh()->cover_photo_path)->toBe('issues/existing.jpg')
+            ->and(Storage::disk()->get($original['path']))->toBe('original event bytes')
+            ->and(Storage::disk()->get('issues/existing.jpg'))->toBe('original cover bytes')
+            ->and(Storage::disk()->getVisibility($original['path']))->toBe('private');
+
+        $assertPhotos = fn (Assert $page) => $page
+            ->where('issue.cover_photo.showEntirePhoto', $showEntirePhoto)
+            ->where('issue.cover_photo.focalPoint', ['x' => 12, 'y' => 74])
+            ->where('issue.events.0.photos.0.showEntirePhoto', true)
+            ->where('issue.events.0.photos.1.showEntirePhoto', $showEntirePhoto)
+            ->where('issue.events.0.photos.1.focalPoint', ['x' => 82, 'y' => 23])
+            ->missing('issue.events.0.photos.1.path');
+        $this->get('/issues/'.$issue->slug.'/preview')->assertInertia($assertPhotos);
+        $issue->update(['is_published' => true, 'password' => 'family-photo-password']);
+        $this->post('/issues/'.$issue->slug.'/login', ['password' => 'family-photo-password'])->assertSessionHasNoErrors();
+        $this->get('/issues/'.$issue->slug)->assertInertia($assertPhotos);
+    }
 });
 
 test('photo focus rejects invalid coordinates', function (array $point) {

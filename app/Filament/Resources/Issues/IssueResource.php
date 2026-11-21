@@ -114,6 +114,10 @@ class IssueResource extends Resource
                             ->maxSize(12288)
                             ->live()
                             ->helperText('JPEG, PNG, or WebP. Up to 12 MB. Until you upload a photo, the sample lake photograph is shown.'),
+                        Toggle::make('cover_show_entire_photo')
+                            ->label('Show entire photo in layout')
+                            ->helperText('Keep the whole photo visible inside the same space, with room around it when needed. Turn off to use your saved photo focus again.')
+                            ->default(false),
                         FocalPoint::make('cover_focal_point')->imageField('cover_photo_path'),
                         TextInput::make('cover_photo_alt')
                             ->label('Cover image description')

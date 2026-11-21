@@ -13,6 +13,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -70,6 +71,10 @@ class EventResource extends Resource
                                     ->helperText('JPEG, PNG, or WebP. Up to 12 MB.')
                                     ->live()
                                     ->required(),
+                                Toggle::make('show_entire_photo')
+                                    ->label('Show entire photo in layout')
+                                    ->helperText('Keep the whole photo visible inside the same space, with room around it when needed. Turn off to use your saved photo focus again.')
+                                    ->default(false),
                                 FocalPoint::make('focal_point'),
                                 TextInput::make('alt')
                                     ->label('Image description')
